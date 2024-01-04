@@ -10,7 +10,7 @@ def get_data(area_name):
     );
     out body;
     >;
-    out skel qt;
+    out geom;
     """
     api = overpass.API()
     respu = None
@@ -22,5 +22,5 @@ def get_data(area_name):
     return respu
 
 with open('data.json', 'w') as outfile:
-    json.dump(get_data('Warszawa'), outfile)
+    json.dump(get_data('Mąkoszyce'), outfile)
 
