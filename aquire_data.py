@@ -146,7 +146,7 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     # get hexagons which intersect with buildings
     # columns are unique building names
     # rows are hexagon ids
-    retv = pd.DataFrame(columns=['hex_id', 'name', 'area'])
+    rows_to_add = []
     for i, row in building_df.iterrows():
         print(f"Processing row {i} of {len(building_df)}")
         latlons = [(lat, lon) for lat, lon in row['geometry'].exterior.coords]
@@ -162,7 +162,6 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
             hexagons.add(h3.latlng_to_cell(lat, lon, hexagon_res))
         # make the list unique
         hexagons = set(hexagons)
-        dicts_to_add = []
         # calculate area of intersection
         for hexagon in hexagons:
             # calculate intersection using shapely
@@ -175,10 +174,10 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
             bdry = shapely.geometry.Polygon(bdry)
             inter_area = bdry.intersection(row_xy).area
             # add to dataframe
-            dict_to_add = {'hex_id': hexagon, 'name': row['name'], 'area': inter_area}
-            dicts_to_add.append(dict_to_add)
+            # dict_to_add = {'hex_id': hexagon, 'name': row['name'], 'area': inter_area}
+            rows_to_add.append((hexagon, row['name'], inter_area))
     
-    retv = pd.DataFrame(dicts_to_add)
+    retv = pd.DataFrame(rows_to_add, columns=['hex_id', 'name', 'area'])
     retv = retv.groupby(['hex_id', 'name']).sum()
     retv = retv.reset_index()
     # pivot the table
@@ -198,40 +197,37 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     """
     # create a neighbour column for each column in df
     retv = df.copy()
-    # for col in retv.columns:
-    #     retv[f'{col}_neighbour_count'] = 0
-#     /home/radekaadek/myaed/aquire_data.py:202: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
-#   retv[f'{col}_neighbour_count'] = 0
-    # fix the warning
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
     integer_columns = [col for col in retv.columns if retv[col].dtype == 'int64']
     # get neighbours of each hexagon
+    processed = 0
     for hex_id in df.index:
+        print(f"Processing hexagon {processed} of {len(df)}")
+        processed += 1
         neighbours = h3.grid_disk(hex_id, 1)
-        for neighbour in neighbours:
-            for col in df.columns:
-                col_name = f'{col}_neighbour_count'
-                # check if neighbour is in df
-                if neighbour in df.index:
-                    # check the data type of the column
-                    if retv[col_name].dtype == 'int64':
-                        # convert to float before addition
-                        retv[col_name] = retv[col_name].astype(float)
-                    # add value of hex_id to neighbour
-                    retv.at[neighbour, col_name] += df.at[hex_id, col]
-                    # convert back to int if necessary
-                    if retv[col_name].dtype == 'float64' and col in integer_columns:
-                        retv[col_name] = retv[col_name].astype(int)
+        # get only neighbours that are in df
+        neighbours_in_df = [neighbour for neighbour in neighbours if neighbour in df.index]
+        for col in df.columns:
+            col_name = f'{col}_neighbour_count'
+            # add value of hex_id to neighbours
+            retv.loc[neighbours_in_df, col_name] += df.at[hex_id, col]
+            # convert back to int if necessary
+            if col in integer_columns:
+                retv[col_name] = retv[col_name].astype(int)
+    # fill NaNs with 0
+    retv = retv.fillna(0)
     return retv
 
 def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_neighbours: bool = True) -> pd.DataFrame:
     # combine data from get_feature_df and get_area_df
     feature_df = get_feature_df(area_name, api, hexagon_res=hexagon_res)
     building_df = get_building_data(area_name, api)
+    print(building_df)
     s = time.time()
     area_df = get_area_df(building_df, hexagon_res)
     e = time.time()
     print(f"Time to get area data: {e-s}")
+    print(f"Resulting area_df:\n {area_df}")
     # merge the two dataframes
     retv = pd.merge(feature_df, area_df, on='hex_id', how='outer')
     # set index to hex_id
@@ -262,9 +258,9 @@ if __name__ == "__main__":
     # test get_all_data
     # print("Testing get_all_data")
     # print(get_feature_df("Płońsk", api))
-    b = get_all_data("Sochocin", api)
+    b = get_all_data("Lublin", api)
     # save to csv
-    b.to_csv("sochocin.csv")
+    b.to_csv("lublin.csv")
     # test get_feature_gpd
     # print("Testing get_feature_gpd")
     # b = get_feature_gpd("Płońsk", api)
