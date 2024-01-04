@@ -108,12 +108,13 @@ def get_feature_df(area_name: str, api: overpass.API, date: str = None, hexagon_
     government = get_point_data(node_names[4], area_name, api)
     leisure = get_point_data(node_names[5], area_name, api)
     office = get_point_data(node_names[6], area_name, api)
-
-    amenities.extend(highways)
-    amenities.extend(leisure)
-    amenities.extend(office)
-    amenities.extend(government)
-    amenities.extend(public_transport)
+    pt_list = []
+    pt_list.extend(amenities)
+    pt_list.extend(highways)
+    pt_list.extend(leisure)
+    pt_list.extend(office)
+    pt_list.extend(government)
+    pt_list.extend(public_transport)
     # create a dataframe
     retv = pd.DataFrame(columns=['hex_id', 'name'])
     for amenity in amenities:
@@ -227,7 +228,6 @@ def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_ne
     area_df = get_area_df(building_df, hexagon_res)
     e = time.time()
     print(f"Time to get area data: {e-s}")
-    print(f"Resulting area_df:\n {area_df}")
     # merge the two dataframes
     retv = pd.merge(feature_df, area_df, on='hex_id', how='outer')
     # set index to hex_id
@@ -244,24 +244,13 @@ def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_ne
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-    # test get_building_data
-    # print("Testing get_building_data")
     api = overpass.API()
-    # a = get_building_data("Mąkoszyce", api)
-    # print(a)
-    # test get_area_gdf
-    # print("Testing get_area_gdf")
-    # b = get_area_gdf(a)
-    # print(b)
-    # print b where manufacture is > 0
-    # print(b[b['manufacture'] > 0])
-    # test get_all_data
-    # print("Testing get_all_data")
-    # print(get_feature_df("Płońsk", api))
-    b = get_all_data("Lublin", api)
-    # save to csv
-    b.to_csv("lublin.csv")
-    # test get_feature_gpd
-    # print("Testing get_feature_gpd")
-    # b = get_feature_gpd("Płońsk", api)
-    # print(b)
+
+    a = get_all_data("Virginia Beach", api)
+    a.to_csv("virginia_beach.csv")
+    # test getting ammenities from get_point_data
+    # amenities = get_point_data("amenity", "Virginia Beach", api)
+    # print(amenities)
+    # test getting buildings from get_building_data
+    # buildings = get_point_data("building", "Virginia Beach", api)
+    # print(buildings)
