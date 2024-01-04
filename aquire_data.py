@@ -101,13 +101,14 @@ def get_feature_df(area_name: str, api: overpass.API, date: str = None, hexagon_
     date -- date of the data (default None)
     """
     
-    node_names = ['amenity', 'building', 'highway', 'public_transport', 'government', 'leisure', 'office', 'natural'] #natural is not used
+    node_names = ['amenity', 'building', 'highway', 'public_transport', 'government', 'leisure', 'office', 'emergency', 'natural'] #natural not used emergency
     amenities = get_point_data(node_names[0], area_name, api)
     highways = get_point_data(node_names[2], area_name, api)
     public_transport = get_point_data(node_names[3], area_name, api)
     government = get_point_data(node_names[4], area_name, api)
     leisure = get_point_data(node_names[5], area_name, api)
     office = get_point_data(node_names[6], area_name, api)
+    emergency = get_point_data(node_names[7], area_name, api)
     pt_list = []
     pt_list.extend(amenities)
     pt_list.extend(highways)
@@ -115,6 +116,7 @@ def get_feature_df(area_name: str, api: overpass.API, date: str = None, hexagon_
     pt_list.extend(office)
     pt_list.extend(government)
     pt_list.extend(public_transport)
+    pt_list.extend(emergency)
     # create a dataframe
     retv = pd.DataFrame(columns=['hex_id', 'name'])
     for amenity in amenities:
@@ -248,6 +250,8 @@ if __name__ == "__main__":
 
     a = get_all_data("Virginia Beach", api)
     a.to_csv("virginia_beach.csv")
+    b = get_all_data("Lublin", api)
+    b.to_csv("lublin.csv")
     # test getting ammenities from get_point_data
     # amenities = get_point_data("amenity", "Virginia Beach", api)
     # print(amenities)
