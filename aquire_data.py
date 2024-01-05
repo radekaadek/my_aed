@@ -248,10 +248,11 @@ def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_ne
 if __name__ == "__main__":
     api = overpass.API()
 
-    a = get_all_data("Virginia Beach", api)
-    a.to_csv("virginia_beach.csv")
-    b = get_all_data("Lublin", api)
-    b.to_csv("lublin.csv")
+    # a = get_all_data("Marin County", api)
+    # a.to_csv("marin.csv")
+
+    b = get_point_data("amenity", "Marin County", api)
+    print(b)
     # test getting ammenities from get_point_data
     # amenities = get_point_data("amenity", "Virginia Beach", api)
     # print(amenities)
