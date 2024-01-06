@@ -123,7 +123,9 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     if date is None:
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    node_names = ['amenity', 'building', 'highway', 'public_transport', 'government', 'leisure', 'office', 'emergency', 'natural'] #natural not used emergency
+    node_names = ['amenity', 'building', 'highway', 'public_transport',
+                  'government', 'leisure', 'office', 'emergency', 'natural',
+                  'advertising'] #natural not used emergency
     amenities = get_point_data(node_names[0], area_name, date=date)
     highways = get_point_data(node_names[2], area_name, date=date)
     public_transport = get_point_data(node_names[3], area_name, date=date)
@@ -131,6 +133,7 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     leisure = get_point_data(node_names[5], area_name, date=date)
     office = get_point_data(node_names[6], area_name, date=date)
     emergency = get_point_data(node_names[7], area_name, date=date)
+    advertising = get_point_data(node_names[9], area_name, date=date)
     pt_list = []
     pt_list.extend(amenities)
     pt_list.extend(highways)
@@ -139,6 +142,7 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     pt_list.extend(government)
     pt_list.extend(public_transport)
     pt_list.extend(emergency)
+    pt_list.extend(advertising)
     # create a dataframe
     retv = pd.DataFrame(columns=['hex_id', 'name'])
     for amenity in amenities:
