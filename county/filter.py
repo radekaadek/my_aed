@@ -1,12 +1,11 @@
 import pandas as pd
 
+# data source: https://data.marincounty.org/Public-Health/Emergency-Medical-Service-EMS-Incidents/swth-izpe/about_data
+
 # read the file, on stdin as a csv
 df = pd.read_csv('county_to_filter.csv', encoding='latin-1')
 # filter column cardiac_type if it contains 'Cardiac Arrest' or the column cause contains 'Cardiac Arrest'
 df = df[df['cardiac_type'].str.contains('Cardiac Arrest') | df['cause'].str.contains('Cardiac Arrest')]
-
-# filter datetime2 where it starts with 2019 or 2018 or 2017
-df = df[df['datetime2'].str.contains('2019|2018|2017')]
 
 # drop empty columns
 # get the columns that are empty

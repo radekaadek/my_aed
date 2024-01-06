@@ -1,13 +1,14 @@
-import overpass
+from OSMPythonTools.overpass import Overpass, overpassQueryBuilder
+from OSMPythonTools.nominatim import Nominatim
+import requests
 import pandas as pd
-import geopandas as gpd
 import h3
 import shapely
 import pyproj
 import numpy as np
 import time
 
-def get_point_data(node_name: str, area_name: str, api: overpass.API, date: str = None) -> list[dict]:
+def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dict]:
     """Get point data from Overpass API in the form of a list of dictionaries:
 
     geometry: (lat, lon), type: node_name
@@ -19,28 +20,42 @@ def get_point_data(node_name: str, area_name: str, api: overpass.API, date: str 
     api -- overpass API object
     """
     
-    query = ""
+    # query = ""
     # if date is not None: # to jeszcze nie dziala :(
     #     query += f'[date:"{date}"];'
     # else:
     #     query += ''
-    query += f'''
-    area["name"="{area_name}"]->.a;
-    (
-        node["{node_name}"](area.a);
-    );
-    out center;
-    '''
-    resp = api.get(query)
+    # query += f'''
+    # area["name"="{area_name}"]->.a;
+    # (
+    #     node["{node_name}"](area.a);
+    # );
+    # out center;
+    # '''
+    if date is None:
+        # set to current date
+        date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    # ovapi = Overpass()
+    nomatim = Nominatim()
+    areaid = nomatim.query(area_name).areaId()
+    query = overpassQueryBuilder(area=areaid, elementType='node', selector=node_name, out='center', includeGeometry=True)
+    query = '[out:json][timeout:900];' + query
+    print(f"Query: {query}")
+    # r = ovapi.query(query, date=date, timeout=900)
+    base_url = "https://overpass-api.de/api/interpreter"
+    # body is query
+    r = requests.post(base_url, data=query, timeout=900)
+    # print(r.text)
+    resp = r.json()
     nodes = []
-    for node in resp['features']:
-        node_geom = node["geometry"]["coordinates"]
-        name = node["properties"][node_name]
+    for node in resp['elements']:
+        node_geom = (node["lat"], node["lon"])
+        name = node["tags"][node_name]
         nodes.append({"geometry": node_geom, "type": name})
     return nodes
 
 
-def get_building_data(area_name: str, api: overpass.API, date: str = None) -> pd.DataFrame:
+def get_building_data(area_name: str, date: str = None) -> pd.DataFrame:
     """Get building data from Overpass API in the form of a pandas DataFrame:
 
     Building name, Geometry
@@ -51,46 +66,51 @@ def get_building_data(area_name: str, api: overpass.API, date: str = None) -> pd
     api -- overpass API object
     date -- date of the data (default None)
     """
-    query = f"""
-    area["name"="{area_name}"]->.a;
-    (
-        way["building"](area.a);
-        relation["building"](area.a);
-    );
-    out body;
-    >;
-    out geom;
-    """
-    r = api.get(query, responseformat="json")
-    # example response:
-    # name, nodes, geometry
-    # create a dataframe just with name and nodes
+    # query = f"""
+    # [out:json][timeout:900];
+    # area["name"="{area_name}"]->.a;
+    # (
+    #     way["building"](area.a);
+    #     relation["building"](area.a);
+    # );
+    # out body;
+    # >;
+    # out geom;
+    # """
+    if date is None:
+        # set to current date
+        date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    ovapi = Overpass()
+    nomatim = Nominatim()
+    areaid = nomatim.query(area_name).areaId()
+    query = overpassQueryBuilder(area=areaid, elementType=['way', 'relation'], selector='building', out='body geom')
+    query = '[out:json][timeout:900];' + query
+    print(f"Query: {query}")
+    # r = ovapi.query(query, date=date, timeout=900)
+    base_url = "https://overpass-api.de/api/interpreter"
+    # body is query
+    req = requests.post(base_url, data=query, timeout=900)
+    r = req.json()
     buildings = []
-    if 'elements' not in r:
-        raise Exception("No elements in response")
     for building in r['elements']:
-        if 'tags' in building and 'building' in building['tags'] and 'nodes' in building:
-            buildings.append({"name": building['tags']['building'], "nodes": building['nodes']})
-    # create a dict {node_id: (lat, lon)}
-    node_to_latlon = {}
-    for node in r['elements']:
-        if 'type' in node and node['type'] == 'node' and 'id' in node and 'lat' in node and 'lon' in node:
-            node_to_latlon[node['id']] = (node['lat'], node['lon'])
-    # create the dataframe
-    buildings_df = pd.DataFrame(data=buildings)
-    # create a column with lat and lon
-    for i, row in buildings_df.iterrows():
-        latlons = []
-        for node_id in row['nodes']:
-            latlons.append(node_to_latlon[node_id])
-        buildings_df.at[i, 'geometry'] = shapely.geometry.Polygon(latlons)
-    # drop the nodes column
-    buildings_df = buildings_df.drop(columns=['nodes'])
-    # create a GeoDataFrame
-    buildings_gdf = gpd.GeoDataFrame(buildings_df, geometry='geometry', crs='EPSG:4326')
-    return buildings_gdf
+        if 'geometry' in building.keys():
+            geometry = building['geometry']
+        else:
+            continue
+        if 'tags' in building.keys():
+            if 'amenity' in building['tags'].keys():
+                name = building['tags']['amenity']
+            elif 'building' in building['tags'].keys():
+                name = building['tags']['building']
+            else:
+                name = 'unknown'
+        else:
+            name = 'unknown'
+        buildings.append({"name": name, "geometry": geometry})
+    retv = pd.DataFrame(buildings)
+    return retv
 
-def get_feature_df(area_name: str, api: overpass.API, date: str = None, hexagon_res: int = 9) -> pd.DataFrame:
+def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd.DataFrame:
     """Get feature data from Overpass API in the form of a DataFrame with one column 'name' and of which
     values are teh number of features of that type in the area. The index is the hexagon id.
 
@@ -100,15 +120,17 @@ def get_feature_df(area_name: str, api: overpass.API, date: str = None, hexagon_
     api -- overpass API object
     date -- date of the data (default None)
     """
-    
+    if date is None:
+        # set to current date
+        date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     node_names = ['amenity', 'building', 'highway', 'public_transport', 'government', 'leisure', 'office', 'emergency', 'natural'] #natural not used emergency
-    amenities = get_point_data(node_names[0], area_name, api)
-    highways = get_point_data(node_names[2], area_name, api)
-    public_transport = get_point_data(node_names[3], area_name, api)
-    government = get_point_data(node_names[4], area_name, api)
-    leisure = get_point_data(node_names[5], area_name, api)
-    office = get_point_data(node_names[6], area_name, api)
-    emergency = get_point_data(node_names[7], area_name, api)
+    amenities = get_point_data(node_names[0], area_name, date=date)
+    highways = get_point_data(node_names[2], area_name, date=date)
+    public_transport = get_point_data(node_names[3], area_name, date=date)
+    government = get_point_data(node_names[4], area_name, date=date)
+    leisure = get_point_data(node_names[5], area_name, date=date)
+    office = get_point_data(node_names[6], area_name, date=date)
+    emergency = get_point_data(node_names[7], area_name, date=date)
     pt_list = []
     pt_list.extend(amenities)
     pt_list.extend(highways)
@@ -143,6 +165,12 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     building_gdf -- GeoDataFrame with building data
     hexagon_res -- resolution of the hexagon grid (default 9)
     """
+    # input df:
+    #                 name  geometry
+    # 0                yes  [{'lat': 51.9247658, 'lon': 18.1166587}, {'lat...
+    # 1            library  [{'lat': 51.9163144, 'lon': 18.1129191}, {'lat...
+    # 2                yes  [{'lat': 51.91845, 'lon': 18.1099972}, {'lat':...
+    # 3    public_building  [{'lat': 51.9185897, 'lon': 18.1121521}, {'lat...
     inproj = pyproj.Proj('EPSG:4326')
     outproj = pyproj.Proj('EPSG:9835')
     transformer = pyproj.Transformer.from_proj(inproj, outproj)
@@ -152,12 +180,15 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     rows_to_add = []
     for i, row in building_df.iterrows():
         print(f"Processing row {i} of {len(building_df)}")
-        latlons = [(lat, lon) for lat, lon in row['geometry'].exterior.coords]
+        # get latlons of the building
+        latlons = [(point['lat'], point['lon']) for point in row['geometry']]
         # delete last point if it is the same as the first one
         if len(latlons) > 1 and latlons[0] == latlons[-1]:
             latlons.pop()
         # convert to h3 polygon
         p = h3.Polygon(latlons)
+        # p to a shapely polygon
+        ppoly = shapely.geometry.Polygon(latlons)
         hexagons = h3.polygon_to_cells(p, hexagon_res)
         # this only returns cells fully contained in the polygon
         # add cells on the border
@@ -167,18 +198,12 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
         hexagons = set(hexagons)
         # calculate area of intersection
         for hexagon in hexagons:
-            # calculate intersection using shapely
-            bdry = shapely.geometry.Polygon(h3.cell_to_boundary(hexagon, False))
-            row_xy = shapely.geometry.Polygon(row['geometry'])
-            # convert to xy coordinates using pyproj
-            bdry = shapely.ops.transform(transformer.transform, bdry)
-            row_xy = shapely.ops.transform(transformer.transform, row_xy)
-            # convert to shapely polygon
-            bdry = shapely.geometry.Polygon(bdry)
-            inter_area = bdry.intersection(row_xy).area
-            # add to dataframe
-            # dict_to_add = {'hex_id': hexagon, 'name': row['name'], 'area': inter_area}
-            rows_to_add.append((hexagon, row['name'], inter_area))
+            hexagon_polygon = h3.cell_to_boundary(hexagon)
+            hexagon_polygon = [transformer.transform(point[0], point[1]) for point in hexagon_polygon]
+            hexagon_polygon = shapely.geometry.Polygon(hexagon_polygon)
+            intersection = hexagon_polygon.intersection(ppoly)
+            area = intersection.area
+            rows_to_add.append({'hex_id': hexagon, 'name': row['name'], 'area': area})
     
     retv = pd.DataFrame(rows_to_add, columns=['hex_id', 'name', 'area'])
     retv = retv.groupby(['hex_id', 'name']).sum()
@@ -221,10 +246,10 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     retv = retv.fillna(0)
     return retv
 
-def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_neighbours: bool = True) -> pd.DataFrame:
+def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = True, date: str = None) -> pd.DataFrame:
     # combine data from get_feature_df and get_area_df
-    feature_df = get_feature_df(area_name, api, hexagon_res=hexagon_res)
-    building_df = get_building_data(area_name, api)
+    feature_df = get_feature_df(area_name, date=date, hexagon_res=hexagon_res)
+    building_df = get_building_data(area_name, date=date)
     print(building_df)
     s = time.time()
     area_df = get_area_df(building_df, hexagon_res)
@@ -246,13 +271,20 @@ def get_all_data(area_name: str, api: overpass.API, hexagon_res: int = 9, get_ne
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-    api = overpass.API()
 
-    # a = get_all_data("Marin County", api)
-    # a.to_csv("marin.csv")
-
-    b = get_point_data("amenity", "Marin County", api)
-    print(b)
+    # a = get_building_data("Montgomery County", api)
+    # save to csv
+    # a.to_csv('montgomery_building.csv', index=False)
+    # a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    # a.to_csv('montgomery_county_osm.csv')
+    # test
+    # b = get_all_data("Lublin")
+    # b.to_csv('lublin_osm.csv')
+    d = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    d.to_csv('montgomery_osm.csv')
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c.to_csv('cincinnati_osm.csv')
+    
     # test getting ammenities from get_point_data
     # amenities = get_point_data("amenity", "Virginia Beach", api)
     # print(amenities)

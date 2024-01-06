@@ -1,5 +1,6 @@
 # data is big :O
-EMS_Incident_Dispatch_Data.csv
+cache/
+*_osm.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
