@@ -282,12 +282,12 @@ if __name__ == "__main__":
     # a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
     # a.to_csv('montgomery_county_osm.csv')
     # test
-    # b = get_all_data("Lublin")
-    # b.to_csv('lublin_osm.csv')
-    d = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
-    d.to_csv('montgomery_osm.csv')
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    c.to_csv('cincinnati_osm.csv')
+    b = get_all_data("Warszawa")
+    b.to_csv('warszawa_osm.csv')
+    # d = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    # d.to_csv('montgomery_osm.csv')
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c.to_csv('cincinnati_osm.csv')
     
     # test getting ammenities from get_point_data
     # amenities = get_point_data("amenity", "Virginia Beach", api)
