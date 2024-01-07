@@ -2,6 +2,7 @@
 cache/
 *_osm.csv
 mtgmry_unfiltered.csv
+apikey.txt
 Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv
 
 # Byte-compiled / optimized / DLL files

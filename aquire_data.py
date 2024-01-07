@@ -275,23 +275,13 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-
-    # a = get_building_data("Montgomery County", api)
-    # save to csv
-    # a.to_csv('montgomery_building.csv', index=False)
     # a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
     # a.to_csv('montgomery_county_osm.csv')
-    # test
-    b = get_all_data("Warszawa")
-    b.to_csv('warszawa_osm.csv')
-    # d = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
-    # d.to_csv('montgomery_osm.csv')
     # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
     # c.to_csv('cincinnati_osm.csv')
-    
-    # test getting ammenities from get_point_data
-    # amenities = get_point_data("amenity", "Virginia Beach", api)
-    # print(amenities)
-    # test getting buildings from get_building_data
-    # buildings = get_point_data("building", "Virginia Beach", api)
-    # print(buildings)
+    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    # d.to_csv('virginia_beach_osm.csv')
+    # e = get_all_data("Warszawa", date="2018-06-01T00:00:00Z")
+    # target = get_all_data("Warszawa")
+    # target.to_csv('warszawa_osm.csv')
+    pass
