@@ -125,7 +125,7 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     node_names = ['amenity', 'building', 'highway', 'public_transport',
                   'government', 'leisure', 'office', 'emergency', 'natural',
-                  'advertising'] #natural not used emergency
+                  'advertising', 'craft', 'sport', 'tourism'] #natural not used emergency
     amenities = get_point_data(node_names[0], area_name, date=date)
     highways = get_point_data(node_names[2], area_name, date=date)
     public_transport = get_point_data(node_names[3], area_name, date=date)
@@ -134,6 +134,9 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     office = get_point_data(node_names[6], area_name, date=date)
     emergency = get_point_data(node_names[7], area_name, date=date)
     advertising = get_point_data(node_names[9], area_name, date=date)
+    craft = get_point_data(node_names[10], area_name, date=date)
+    sport = get_point_data(node_names[11], area_name, date=date)
+    tourism = get_point_data(node_names[12], area_name, date=date)
     pt_list = []
     pt_list.extend(amenities)
     pt_list.extend(highways)
@@ -143,6 +146,8 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     pt_list.extend(public_transport)
     pt_list.extend(emergency)
     pt_list.extend(advertising)
+    pt_list.extend(craft)
+    pt_list.extend(sport)
     # create a dataframe
     retv = pd.DataFrame(columns=['hex_id', 'name'])
     for amenity in amenities:
@@ -277,14 +282,14 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-    # a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
-    # a.to_csv('montgomery_county_osm.csv')
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    # c.to_csv('cincinnati_osm.csv')
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    # d.to_csv('virginia_beach_osm.csv')
-    # e = get_all_data("Warszawa", date="2018-06-01T00:00:00Z")
-    # target = get_all_data("Warszawa")
+    a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    a.to_csv('montgomery_county_osm.csv')
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c.to_csv('cincinnati_osm.csv')
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    d.to_csv('virginia_beach_osm.csv')
+    e = get_all_data("Warszawa", date="2018-06-01T00:00:00Z")
+    target = get_all_data("Warszawa")
     # target.to_csv('warszawa_osm.csv')
     # test get all data
     pass
