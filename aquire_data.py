@@ -230,6 +230,8 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     # create a neighbour column for each column in df
     retv = df.copy()
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
+    # fill them with 0s
+    retv = retv.fillna(0)
     integer_columns = [col for col in retv.columns if retv[col].dtype == 'int64']
     # get neighbours of each hexagon
     processed = 0
@@ -242,7 +244,7 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
         for col in df.columns:
             col_name = f'{col}_neighbour_count'
             # add value of hex_id to neighbours
-            retv.loc[neighbours_in_df, col_name] += df.at[hex_id, col]
+            retv.loc[neighbours_in_df, col_name] += retv.loc[hex_id, col]
             # convert back to int if necessary
             if col in integer_columns:
                 retv[col_name] = retv[col_name].astype(int)
@@ -284,4 +286,5 @@ if __name__ == "__main__":
     # e = get_all_data("Warszawa", date="2018-06-01T00:00:00Z")
     # target = get_all_data("Warszawa")
     # target.to_csv('warszawa_osm.csv')
+    # test get all data
     pass
