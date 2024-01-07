@@ -305,7 +305,7 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     return retv
 if __name__ == "__main__":
     a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
-    a.to_csv('montgomery_county_osm.csv')
+    a.to_csv('montgomery_osm.csv')
     c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
     c.to_csv('cincinnati_osm.csv')
     d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
