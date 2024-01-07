@@ -79,5 +79,9 @@ for _, row in df.iterrows():
 
 df = df.dropna(subset=['lat', 'lon'])
 
+# drop rows with lat and lon not in California
+cal_bounds = (32.32, 42.05, -124.26, -114.8)
+df = df[(df['lat'] > cal_bounds[0]) & (df['lat'] < cal_bounds[1]) & (df['lon'] > cal_bounds[2]) & (df['lon'] < cal_bounds[3])]
+
 # write the file as a csv
 df.to_csv('date_loc_county_cardi.csv', index=False)
