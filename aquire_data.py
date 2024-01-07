@@ -148,6 +148,7 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     pt_list.extend(advertising)
     pt_list.extend(craft)
     pt_list.extend(sport)
+    pt_list.extend(tourism)
     # create a dataframe
     retv = pd.DataFrame(columns=['hex_id', 'name'])
     for amenity in amenities:
@@ -159,6 +160,25 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     retv = retv.pivot(index='hex_id', columns='name', values=0)
     # fill NaNs with 0
     retv = retv.fillna(0)
+    return retv
+
+def cells_to_polygon(cells: set[str], hexagon_res: int = 9) -> shapely.geometry.Polygon:
+    """Converts a set of cells to a polygon.
+
+    Keyword arguments:
+
+    cells -- set of cells
+    hexagon_res -- resolution of the hexagon grid (default 9)
+    """
+    # convert to a list of tuples
+    h3_input = []
+    for cell in cells:
+        h3_input.extend(h3.cell_to_boundary(cell))
+    # get their convex hull
+    h3_input = shapely.geometry.MultiPoint(h3_input).convex_hull
+    # swap lat and lon in resulting geojsons
+    # convert to a shapely polygon
+    retv = shapely.geometry.Polygon(h3_input)
     return retv
 
 def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame:
@@ -181,39 +201,42 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     # 2                yes  [{'lat': 51.91845, 'lon': 18.1099972}, {'lat':...
     # 3    public_building  [{'lat': 51.9185897, 'lon': 18.1121521}, {'lat...
     inproj = pyproj.Proj('EPSG:4326')
-    outproj = pyproj.Proj('EPSG:9835')
+    outproj = pyproj.Proj('EPSG:3857')
     transformer = pyproj.Transformer.from_proj(inproj, outproj)
-    # get hexagons which intersect with buildings
-    # columns are unique building names
-    # rows are hexagon ids
+    # add a column with converted geometry
+    transformed_geometry = []
+    for geom in building_df['geometry']:
+        lats = [point['lat'] for point in geom]
+        lons = [point['lon'] for point in geom]
+        x, y = transformer.transform(lats, lons)
+        transformed_geometry.append(shapely.geometry.Polygon(zip(x, y)))
+    building_df['geometry2'] = transformed_geometry
     rows_to_add = []
-    for i, row in building_df.iterrows():
-        print(f"Processing row {i} of {len(building_df)}")
-        # get latlons of the building
-        latlons = [(point['lat'], point['lon']) for point in row['geometry']]
-        # delete last point if it is the same as the first one
-        if len(latlons) > 1 and latlons[0] == latlons[-1]:
-            latlons.pop()
-        # convert to h3 polygon
-        p = h3.Polygon(latlons)
-        # p to a shapely polygon
-        ppoly = shapely.geometry.Polygon(latlons)
-        hexagons = h3.polygon_to_cells(p, hexagon_res)
-        # this only returns cells fully contained in the polygon
-        # add cells on the border
-        for lat, lon in latlons:
-            hexagons.add(h3.latlng_to_cell(lat, lon, hexagon_res))
-        # make the list unique
-        hexagons = set(hexagons)
-        # calculate area of intersection
-        for hexagon in hexagons:
-            hexagon_polygon = h3.cell_to_boundary(hexagon)
-            hexagon_polygon = [transformer.transform(point[0], point[1]) for point in hexagon_polygon]
-            hexagon_polygon = shapely.geometry.Polygon(hexagon_polygon)
-            intersection = hexagon_polygon.intersection(ppoly)
-            area = intersection.area
-            rows_to_add.append({'hex_id': hexagon, 'name': row['name'], 'area': area})
-    
+    for _, row in building_df.iterrows():
+        # get hexagons
+        # convert to a list of tuples
+        h3_input = [(point['lat'], point['lon']) for point in row['geometry']]
+        # get all cells that are in the polygon
+        h3_cells = {h3.latlng_to_cell(*point, hexagon_res) for point in h3_input}
+        h3_poly = h3.Polygon(h3_input)
+        # add cells fully inside
+        h3_cells.update(h3.polygon_to_cells(h3_poly, hexagon_res))
+        # convert to a bounding polygon
+        hex_bpoly_4326 = cells_to_polygon(h3_cells, hexagon_res)
+        # transform to EPSG:3857
+        # get polygon coords
+        x, y = hex_bpoly_4326.exterior.coords.xy
+        # transform
+        x, y = transformer.transform(x, y)
+        # create a polygon
+        hex_bpoly = shapely.geometry.Polygon(zip(x, y))
+        # get area of the intersection
+        intersection = hex_bpoly.intersection(row['geometry2'])
+        area = intersection.area
+        # add to rows_to_add
+        for hex_id in h3_cells:
+            rows_to_add.append({'hex_id': hex_id, 'name': row['name'], 'area': area})
+
     retv = pd.DataFrame(rows_to_add, columns=['hex_id', 'name', 'area'])
     retv = retv.groupby(['hex_id', 'name']).sum()
     retv = retv.reset_index()
@@ -261,7 +284,6 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     # combine data from get_feature_df and get_area_df
     feature_df = get_feature_df(area_name, date=date, hexagon_res=hexagon_res)
     building_df = get_building_data(area_name, date=date)
-    print(building_df)
     s = time.time()
     area_df = get_area_df(building_df, hexagon_res)
     e = time.time()
@@ -288,8 +310,10 @@ if __name__ == "__main__":
     c.to_csv('cincinnati_osm.csv')
     d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
     d.to_csv('virginia_beach_osm.csv')
-    e = get_all_data("Warszawa", date="2018-06-01T00:00:00Z")
+    e = get_all_data("Warszawa")
     target = get_all_data("Warszawa")
-    # target.to_csv('warszawa_osm.csv')
+    target.to_csv('warszawa_osm.csv')
     # test get all data
+    # sochocin = get_area_df(get_building_data("Sochocin"))
+    # sochocin.to_csv('sochocin_osm.csv')
     pass
