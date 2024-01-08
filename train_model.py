@@ -15,7 +15,9 @@ target_df.set_index('hex_id', inplace=True)
 
 # drop columns that are not in target_df
 target_cols = list(target_df.columns)
-main_df = main_df[target_cols]
+for col in main_df.columns:
+    if col not in target_cols and col != 'OHCA':
+        main_df.drop(col, axis=1, inplace=True)
 
 h2o.init()
 h2o_df = h2o.H2OFrame(main_df)
