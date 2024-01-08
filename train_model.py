@@ -31,7 +31,7 @@ if lb is not None:
 
 # Get the best model
 leader_model = aml.leader
-leader_model.download_mojo(path='./', get_genmodel_jar=True)
+leader_model.download_mojo(path='./')
 
 # Predict and add to target csv
 target_df = h2o.H2OFrame(target_df)
