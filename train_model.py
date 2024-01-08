@@ -9,7 +9,7 @@ main_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 main_df.set_index('hex_id', inplace=True)
 
 # read target csv
-target_df = pd.read_csv('warszawa.csv')
+target_df = pd.read_csv('warszawa_osm.csv')
 target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 target_df.set_index('hex_id', inplace=True)
 
@@ -18,6 +18,9 @@ target_cols = list(target_df.columns)
 for col in main_df.columns:
     if col not in target_cols and col != 'OHCA':
         main_df.drop(col, axis=1, inplace=True)
+
+# shuffle rows
+main_df = main_df.sample(frac=1)
 
 h2o.init()
 h2o_df = h2o.H2OFrame(main_df)

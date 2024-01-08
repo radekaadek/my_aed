@@ -33,19 +33,29 @@ top_10_hexagons = poland_df[poland_df['aed_count'] == 0].sort_values(by='predict
 # add hexagons with opacity based on the number of ohca
 for i, row in poland_df.iterrows():
     if row['aed_count'] == 0 and row['hospital_x'] == 0:
-        folium.Polygon(
-            locations=h3.cell_to_boundary(i),
-            color='red',
-            fill_color='red',
-            fill_opacity=row['predictions'] / max_ohca,
-            popup='Predicted OHCA: {}'.format(row['predictions'])
-        ).add_to(m)
+        # if its in top 10 hexagons make it blue
+        if i in top_10_hexagons.index:
+            folium.Polygon(
+                locations=h3.cell_to_boundary(i),
+                color='blue',
+                fill_color='blue',
+                fill_opacity=min(row['predictions'] / max_ohca, 0.9),
+                popup='Predicted OHCA: {}'.format(row['predictions'])
+            ).add_to(m)
+        else:
+            folium.Polygon(
+                locations=h3.cell_to_boundary(i),
+                color='red',
+                fill_color='red',
+                fill_opacity=min(row['predictions'] / max_ohca, 0.9),
+                popup='Predicted OHCA: {}'.format(row['predictions'])
+            ).add_to(m)
     else:
         folium.Polygon(
             locations=h3.cell_to_boundary(i),
             color='green',
             fill_color='green',
-            fill_opacity=row['predictions'] / max_ohca,
+            fill_opacity=min(row['predictions'] / max_ohca, 0.9),
             popup='Predicted OHCA: {}'.format(row['predictions'])
         ).add_to(m)
 m.save('warsaw.html')
