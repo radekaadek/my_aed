@@ -6,7 +6,7 @@ import pandas as pd
 h2o.init()
 
 # load jar model
-model_path = "StackedEnsemble_AllModels_1_AutoML_1_20240108_154423"
+model_path = "StackedEnsemble_BestOfFamily_1_AutoML_1_20240108_174135"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)
