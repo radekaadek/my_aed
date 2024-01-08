@@ -13,6 +13,10 @@ target_df = pd.read_csv('warszawa.csv')
 target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 target_df.set_index('hex_id', inplace=True)
 
+# drop columns that are not in target_df
+target_cols = list(target_df.columns)
+main_df = main_df[target_cols]
+
 h2o.init()
 h2o_df = h2o.H2OFrame(main_df)
 x = list(main_df.columns)
@@ -33,14 +37,6 @@ if lb is not None:
 leader_model = aml.leader
 # save as binary for python
 model_path = h2o.save_model(model=leader_model, path=".", force=True)
-
-# Predict and add to target csv
-target_df = h2o.H2OFrame(target_df)
-predictions = leader_model.predict(target_df)
-predictions_df = predictions.as_data_frame()
-target_df = target_df.as_data_frame()
-target_df['predictions'] = predictions_df
-target_df.to_csv('predictions.csv')
 
 
 # Shutdown h2o
