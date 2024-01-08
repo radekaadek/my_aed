@@ -93,22 +93,44 @@ main_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df.set_index('hex_id', inplace=True)
 
-#### ONLY FOR TESTING
+# add montgomery
+mtgmry_hexagon_df = pd.read_csv('montgomery_osm.csv')
+mtgmry_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
+# pivot the dataframe to have the hex_id as the index
+mtgmry_hexagon_df.set_index('hex_id', inplace=True)
+main_hexagon_df = pd.concat([main_hexagon_df, mtgmry_hexagon_df], ignore_index=False, axis=0)
+
+# add the OHCA count to the main dataframe
+main_hexagon_df = pd.concat([main_hexagon_df, main_ohca_df], ignore_index=False, axis=1)
+# save to a csv file
+
+# add cinncinati
+cinncinati_hexagon_df = pd.read_csv('cincinnati_osm.csv')
+cinncinati_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
+# pivot the dataframe to have the hex_id as the index
+cinncinati_hexagon_df.set_index('hex_id', inplace=True)
+main_hexagon_df = pd.concat([main_hexagon_df, cinncinati_hexagon_df], ignore_index=False, axis=0)
+# fill the NaN values with 0
+main_hexagon_df.fillna(0, inplace=True)
+main_hexagon_df.to_csv('main_hexagon_df.csv')
+
 # read the csv file
 poland_df = pd.read_csv('warszawa_osm.csv')
 # set unnamed column name to hex_id
 poland_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 poland_df.set_index('hex_id', inplace=True)
+# delete columns not in training data
+main_cols = list(main_hexagon_df.columns)
+poland_cols = list(poland_df.columns)
+for col in poland_cols:
+    if col not in main_cols:
+        del poland_df[col]
+# fill the NaN values with 0
+
 # drop columns in main_hexagon_df that are not in poland_df
 main_cols = list(main_hexagon_df.columns)
 poland_cols = list(poland_df.columns)
 for col in main_cols:
     if col not in poland_cols and col != 'OHCA':
         del main_hexagon_df[col]
-
-# fill NaN values with 0
-main_hexagon_df.fillna(0, inplace=True)
-
-# save the dataframe to a csv file
-main_hexagon_df.to_csv('main_hexagon_df.csv')
