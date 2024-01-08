@@ -7,7 +7,7 @@ h2o.init()
 
 # load jar model
 model_path = "h2o-genmodel.jar"
-loaded_model = h2o.load_model(model_path)
+loaded_model = h2o.import_mojo(model_path)
 
 # load data
 data_path = "warszawa_osm.csv"
