@@ -4,8 +4,7 @@ import pandas as pd
 import h3
 
 poland_df = pd.read_csv('predictions.csv')
-poland_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-poland_df.set_index('hex_id', inplace=True)
+poland_df.set_index('Unnamed: 0', inplace=True)
 print(poland_df.head())
 
 aed_url = 'https://aed.openstreetmap.org.pl/aed_poland.geojson'
@@ -34,13 +33,19 @@ top_10_hexagons = poland_df[poland_df['aed_count'] == 0].sort_values(by='predict
 # add hexagons with opacity based on the number of ohca
 for i, row in poland_df.iterrows():
     if row['aed_count'] == 0 and row['hospital_x'] == 0:
-        boundary = str(h3.cell_to_boundary(i))
-        if row['predictions'] >= top_10_hexagons['predictions'].min():
-            folium.Polygon(locations=boundary, fill_color='blue', fill_opacity=row['predictions']/max_ohca/2).add_to(m)
-        else:
-            folium.Polygon(locations=boundary, fill_color='red', fill_opacity=row['predictions']/max_ohca/2).add_to(m)
-
+        folium.Polygon(
+            locations=h3.cell_to_boundary(i),
+            color='red',
+            fill_color='red',
+            fill_opacity=row['predictions'] / max_ohca,
+            popup='Predicted OHCA: {}'.format(row['predictions'])
+        ).add_to(m)
     else:
-        boundary = h3.cell_to_boundary(i)
-        folium.Polygon(locations=boundary, fill_color='green', fill_opacity=row['predictions']/max_ohca/2).add_to(m)
+        folium.Polygon(
+            locations=h3.cell_to_boundary(i),
+            color='green',
+            fill_color='green',
+            fill_opacity=row['predictions'] / max_ohca,
+            popup='Predicted OHCA: {}'.format(row['predictions'])
+        ).add_to(m)
 m.save('warsaw.html')
