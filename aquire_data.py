@@ -259,23 +259,23 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     retv = df.copy()
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
     # fill them with 0s
-    retv = retv.fillna(0)
+    retv = retv.fillna(np.float64(0))
     integer_columns = [col for col in retv.columns if retv[col].dtype == 'int64']
     # get neighbours of each hexagon
     processed = 0
+    df_len = len(df)
     for hex_id in df.index:
-        print(f"Processing hexagon {processed} of {len(df)}")
+        print(f"Processing hexagon {processed} of {df_len}")
         processed += 1
         neighbours = h3.grid_disk(hex_id, 1)
-        # get only neighbours that are in df
+        # get neighbours that are only in df
         neighbours_in_df = [neighbour for neighbour in neighbours if neighbour in df.index]
         for col in df.columns:
             col_name = f'{col}_neighbour_count'
             # add value of hex_id to neighbours
-            retv.loc[neighbours_in_df, col_name] += retv.loc[hex_id, col]
-            # convert back to int if necessary
-            if col in integer_columns:
-                retv[col_name] = retv[col_name].astype(int)
+            n_val = np.float64(retv.loc[hex_id, col])
+            for neighbour_col in neighbours_in_df:
+                retv.loc[neighbour_col, col_name] += n_val
     # fill NaNs with 0
     retv = retv.fillna(0)
     return retv
@@ -304,16 +304,15 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-    a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
-    a.to_csv('montgomery_osm.csv')
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    c.to_csv('cincinnati_osm.csv')
-    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    d.to_csv('virginia_beach_osm.csv')
-    e = get_all_data("Warszawa")
-    target = get_all_data("Warszawa")
-    target.to_csv('warszawa_osm.csv')
+    # a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    # a.to_csv('montgomery_osm.csv')
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c.to_csv('cincinnati_osm.csv')
+    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    # d.to_csv('virginia_beach_osm.csv')
+    # target = get_all_data("Warszawa")
+    # target.to_csv('warszawa_osm.csv')
     # test get all data
-    # sochocin = get_area_df(get_building_data("Sochocin"))
-    # sochocin.to_csv('sochocin_osm.csv')
+    sochocin = get_all_data("Płońsk", hexagon_res=9)
+    sochocin.to_csv('plonsk_osm.csv')
     pass
