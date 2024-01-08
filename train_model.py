@@ -2,6 +2,8 @@ import pandas as pd
 import h2o
 from h2o.automl import H2OAutoML
 
+target = 'lvl2'
+
 # Read the defata
 main_df = pd.read_csv('main_hexagon_df.csv')
 
@@ -16,7 +18,7 @@ target_df.set_index('hex_id', inplace=True)
 # drop columns that are not in target_df
 target_cols = list(target_df.columns)
 for col in main_df.columns:
-    if col not in target_cols and col != 'OHCA':
+    if col not in target_cols and col != target:
         main_df.drop(col, axis=1, inplace=True)
 
 # shuffle rows
@@ -25,7 +27,7 @@ main_df = main_df.sample(frac=1)
 h2o.init()
 h2o_df = h2o.H2OFrame(main_df)
 x = list(main_df.columns)
-y = 'OHCA'
+y = target
 
 aml = H2OAutoML(max_models=20, seed=1, max_runtime_secs=3600)
 aml.train(x=x, y=y, training_frame=h2o_df)
