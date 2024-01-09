@@ -6,7 +6,7 @@ import h3
 target = 'predictions'
 poland_df = pd.read_csv('predictions.csv')
 print(poland_df['predictions'].unique())
-poland_df.set_index('Unnamed: 0', inplace=True)
+poland_df.set_index('hex_id', inplace=True)
 print(poland_df.head())
 
 aed_url = 'https://aed.openstreetmap.org.pl/aed_poland.geojson'

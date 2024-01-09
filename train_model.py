@@ -49,7 +49,7 @@ main_df.set_index('hex_id', inplace=True)
 # # Shutdown h2o
 # h2o.cluster().shutdown()
 
-from tpot import TPOTClassifier
+from tpot import TPOTRegressor
 
 # split into train and test
 train = main_df.sample(frac=0.8)
@@ -63,7 +63,7 @@ test_x = test.drop(target, axis=1)
 test_y = test[target]
 
 # train tpot
-tpot = TPOTClassifier(verbosity=2, n_jobs=-1, config_dict='TPOT light')
+tpot = TPOTRegressor(verbosity=2, n_jobs=-1, config_dict='TPOT light')
 tpot.fit(train_x, train_y)
 
 # save tpot model

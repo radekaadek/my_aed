@@ -154,7 +154,7 @@ main_hexagon_df[target] = main_hexagon_df[target].replace(95, 3)
 main_hexagon_df[target] = main_hexagon_df[target].replace(100, 4)
 
 # drop the OHCA column :O
-del main_hexagon_df['OHCA']
+# del main_hexagon_df['OHCA']
 
 # save as main_hexagon_df.csv
 main_hexagon_df.to_csv('main_hexagon_df.csv')
