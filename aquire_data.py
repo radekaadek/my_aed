@@ -8,6 +8,9 @@ import pyproj
 import numpy as np
 import time
 
+logfile = 'log.txt'
+
+
 def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dict]:
     """Get point data from Overpass API in the form of a list of dictionaries:
 
@@ -228,7 +231,9 @@ def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
     try:
         hex_bpoly = shapely.geometry.Polygon(zip(x, y))
     except Exception as e:
-        print(e)
+        # append to log file
+        with open(logfile, 'a') as f:
+            f.write(f"\nError: \n{e}\n")
         return e
     # get area of the intersection
     intersection = hex_bpoly.intersection(shapely.geometry.LineString(line))
@@ -376,6 +381,13 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
 
 
 if __name__ == "__main__":
+    try:
+        with open(logfile, 'r') as f:
+            pass
+    except FileNotFoundError:
+        # create the file
+        with open(logfile, 'w') as f:
+            pass
     a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
     a.to_csv('montgomery_osm.csv')
     c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
