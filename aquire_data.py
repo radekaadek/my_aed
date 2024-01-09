@@ -318,37 +318,37 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     retv = retv.fillna(0)
     return retv
 
+import multiprocessing as mp
+from functools import partial
+
+def process_hexagon(hex_id, df, retv):
+    neighbours = h3.grid_disk(hex_id, 1)
+    neighbours_in_df = [neighbour for neighbour in neighbours if neighbour in df.index]
+    for col in df.columns:
+        col_name = f'{col}_neighbour_count'
+        n_val = np.float32(retv.loc[hex_id, col])
+        for neighbour_col in neighbours_in_df:
+            retv.loc[neighbour_col, col_name] += n_val
+    return retv
 
 def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
-    """Takes in a dataframe with hex_id as index and adds columns with neighbour counts.
-
-    Keyword arguments:
-
-    df -- dataframe with hex_id as index
-    """
-    # create a neighbour column for each column in df
     retv = df.copy()
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
-    # fill them with 0s
     retv = retv.fillna(np.float32(0))
-    # get neighbours of each hexagon
-    processed = 0
-    df_len = len(df)
-    for hex_id in df.index:
-        print(f"Processing hexagon {processed} of {df_len}")
-        processed += 1
-        neighbours = h3.grid_disk(hex_id, 1)
-        # get neighbours that are only in df
-        neighbours_in_df = [neighbour for neighbour in neighbours if neighbour in df.index]
-        for col in df.columns:
-            col_name = f'{col}_neighbour_count'
-            # add value of hex_id to neighbours
-            n_val = np.float32(retv.loc[hex_id, col])
-            for neighbour_col in neighbours_in_df:
-                retv.loc[neighbour_col, col_name] += n_val
-    # fill NaNs with 0
+
+    # leave 2 cores for other stuff
+    cores = max(mp.cpu_count() - 2, 1)
+    with mp.Pool(cores) as pool:
+        partial_func = partial(process_hexagon, df=df, retv=retv)
+        results = pool.map(partial_func, df.index)
+
+    # Combine results
+    for result in results:
+        retv.update(result)
+
     retv = retv.fillna(0)
     return retv
+
 
 def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = True, date: str = None) -> pd.DataFrame:
     # combine data from get_feature_df and get_area_df
@@ -396,13 +396,15 @@ if __name__ == "__main__":
         # create the file
         with open(logfile, 'w') as f:
             pass
-    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    a.to_csv('montgomery_osm.csv')
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    c.to_csv('cincinnati_osm.csv')
-    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    d.to_csv('virginia_beach_osm.csv')
-    target = get_all_data("Warszawa")
-    target.to_csv('warszawa_osm.csv')
+    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    # a.to_csv('montgomery_osm.csv')
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c.to_csv('cincinnati_osm.csv')
+    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    # d.to_csv('virginia_beach_osm.csv')
+    # target = get_all_data("Warszawa")
+    # target.to_csv('warszawa_osm.csv')
     # test get all data
+    test = get_all_data("Sochocin")
+    print(test)
     pass

@@ -1,0 +1,15 @@
+
+Error: 
+A linearring requires at least 4 coordinates.
+
+Error: 
+A linearring requires at least 4 coordinates.
+
+Error: 
+A linearring requires at least 4 coordinates.
+
+Error: 
+A linearring requires at least 4 coordinates.
+
+Error: 
+A linearring requires at least 4 coordinates.
