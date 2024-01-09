@@ -8,7 +8,7 @@ target = 'predictions'
 h2o.init()
 
 # load jar model
-model_path = "StackedEnsemble_BestOfFamily_8_AutoML_1_20240109_02352"
+model_path = "StackedEnsemble_BestOfFamily_4_AutoML_1_20240109_134846"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)

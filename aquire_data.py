@@ -213,29 +213,33 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
     building_df['geometry2'] = transformed_geometry
     rows_to_add = []
     for _, row in building_df.iterrows():
-        # get hexagons
-        # convert to a list of tuples
-        h3_input = [(point['lat'], point['lon']) for point in row['geometry']]
-        # get all cells that are in the polygon
-        h3_cells = {h3.latlng_to_cell(*point, hexagon_res) for point in h3_input}
-        h3_poly = h3.Polygon(h3_input)
-        # add cells fully inside
-        h3_cells.update(h3.polygon_to_cells(h3_poly, hexagon_res))
-        # convert to a bounding polygon
-        hex_bpoly_4326 = cells_to_polygon(h3_cells, hexagon_res)
-        # transform to EPSG:3857
-        # get polygon coords
-        x, y = hex_bpoly_4326.exterior.coords.xy
-        # transform
-        x, y = transformer.transform(x, y)
-        # create a polygon
-        hex_bpoly = shapely.geometry.Polygon(zip(x, y))
-        # get area of the intersection
-        intersection = hex_bpoly.intersection(row['geometry2'])
-        area = intersection.area
-        # add to rows_to_add
-        for hex_id in h3_cells:
-            rows_to_add.append({'hex_id': hex_id, 'name': row['name'], 'area': area})
+        try:
+            # get hexagons
+            # convert to a list of tuples
+            h3_input = [(point['lat'], point['lon']) for point in row['geometry']]
+            # get all cells that are in the polygon
+            h3_cells = {h3.latlng_to_cell(*point, hexagon_res) for point in h3_input}
+            h3_poly = h3.Polygon(h3_input)
+            # add cells fully inside
+            h3_cells.update(h3.polygon_to_cells(h3_poly, hexagon_res))
+            # convert to a bounding polygon
+            hex_bpoly_4326 = cells_to_polygon(h3_cells, hexagon_res)
+            # transform to EPSG:3857
+            # get polygon coords
+            x, y = hex_bpoly_4326.exterior.coords.xy
+            # transform
+            x, y = transformer.transform(x, y)
+            # create a polygon
+            hex_bpoly = shapely.geometry.Polygon(zip(x, y))
+            # get area of the intersection
+            intersection = hex_bpoly.intersection(row['geometry2'])
+            area = intersection.area
+            # add to rows_to_add
+            for hex_id in h3_cells:
+                rows_to_add.append({'hex_id': hex_id, 'name': row['name'], 'area': area})
+        except Exception as e:
+            print(e)
+            continue # yuck i know
 
     retv = pd.DataFrame(rows_to_add, columns=['hex_id', 'name', 'area'])
     retv = retv.groupby(['hex_id', 'name']).sum()
@@ -304,7 +308,7 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
         print(f"Time to add neighbours: {e-s}")
     return retv
 if __name__ == "__main__":
-    a = get_all_data("Montgomery County", date="2018-06-01T00:00:00Z")
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
     a.to_csv('montgomery_osm.csv')
     c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
     c.to_csv('cincinnati_osm.csv')
