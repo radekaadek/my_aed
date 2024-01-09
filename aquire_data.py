@@ -234,7 +234,7 @@ def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
         # append to log file
         with open(logfile, 'a') as f:
             f.write(f"\nError: \n{e}\n")
-        return e
+        return 0
     # get area of the intersection
     intersection = hex_bpoly.intersection(shapely.geometry.LineString(line))
     return intersection.length
