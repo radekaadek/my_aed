@@ -225,7 +225,11 @@ def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
     # get polygon coords
     x, y = hex_bpoly_4326.exterior.coords.xy
     # create a polygon
-    hex_bpoly = shapely.geometry.Polygon(zip(x, y))
+    try:
+        hex_bpoly = shapely.geometry.Polygon(zip(x, y))
+    except Exception as e:
+        print(e)
+        return e
     # get area of the intersection
     intersection = hex_bpoly.intersection(shapely.geometry.LineString(line))
     return intersection.length
