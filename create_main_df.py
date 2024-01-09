@@ -5,6 +5,8 @@ import numpy as np
 import h3
 from os import listdir
 
+target = 'predictions'
+
 # check for the vbohcar.xlsx file in the current directory
 if 'VBOHCAR.xlsx' in listdir():
         # read the third sheet of the excel file
@@ -137,19 +139,19 @@ for col in main_cols:
 
 # now split by 5%s
 procent = 0.05
-main_hexagon_df['lvl2'] = 0
+main_hexagon_df[target] = 0
 for i in np.arange(procent, 1, procent):
-    main_hexagon_df.loc[main_hexagon_df['OHCA'] > main_hexagon_df['OHCA'].quantile(i), 'lvl2'] = np.round((i+procent)*100)
+    main_hexagon_df.loc[main_hexagon_df['OHCA'] > main_hexagon_df['OHCA'].quantile(i), target] = np.round((i+procent)*100)
 # draw a bar chart of OHCA counts by hexagon level
 # sort by number in the front
-main_hexagon_df['lvl2'].value_counts().sort_index().plot(kind='bar')
+main_hexagon_df[target].value_counts().sort_index().plot(kind='bar')
 
 # now convert them to 0, 1, 2, 3, 4
-main_hexagon_df['lvl2'] = main_hexagon_df['lvl2'].replace(0, 0)
-main_hexagon_df['lvl2'] = main_hexagon_df['lvl2'].replace(75, 1)
-main_hexagon_df['lvl2'] = main_hexagon_df['lvl2'].replace(90, 2)
-main_hexagon_df['lvl2'] = main_hexagon_df['lvl2'].replace(95, 3)
-main_hexagon_df['lvl2'] = main_hexagon_df['lvl2'].replace(100, 4)
+main_hexagon_df[target] = main_hexagon_df[target].replace(0, 0)
+main_hexagon_df[target] = main_hexagon_df[target].replace(75, 1)
+main_hexagon_df[target] = main_hexagon_df[target].replace(90, 2)
+main_hexagon_df[target] = main_hexagon_df[target].replace(95, 3)
+main_hexagon_df[target] = main_hexagon_df[target].replace(100, 4)
 
 # drop the OHCA column :O
 del main_hexagon_df['OHCA']
