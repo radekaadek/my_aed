@@ -1,11 +1,11 @@
 import pandas as pd
 
-target = 'predictions'
+target = 'lvl2'
 
 # Read the defata
 main_df = pd.read_csv('main_hexagon_df.csv')
 
-main_df.drop('OHCA', axis=1, inplace=True)
+main_df.drop(['OHCA'], axis=1, inplace=True)
 main_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 main_df.set_index('hex_id', inplace=True)
 

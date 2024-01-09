@@ -137,24 +137,11 @@ for col in main_cols:
     if col not in poland_cols and col != 'OHCA':
         del main_hexagon_df[col]
 
-# now split by 5%s
-procent = 0.05
-main_hexagon_df[target] = 0
-for i in np.arange(procent, 1, procent):
-    main_hexagon_df.loc[main_hexagon_df['OHCA'] > main_hexagon_df['OHCA'].quantile(i), target] = np.round((i+procent)*100)
-# draw a bar chart of OHCA counts by hexagon level
-# sort by number in the front
-main_hexagon_df[target].value_counts().sort_index().plot(kind='bar')
-
-# now convert them to 0, 1, 2, 3, 4
-main_hexagon_df[target] = main_hexagon_df[target].replace(0, 0)
-main_hexagon_df[target] = main_hexagon_df[target].replace(75, 1)
-main_hexagon_df[target] = main_hexagon_df[target].replace(90, 2)
-main_hexagon_df[target] = main_hexagon_df[target].replace(95, 3)
-main_hexagon_df[target] = main_hexagon_df[target].replace(100, 4)
-
-# drop the OHCA column :O
-# del main_hexagon_df['OHCA']
+# group ohca values by 1, 2
+main_hexagon_df['lvl2'] = 1
+# take top 10% of the hexagons and assign lvl2 to 1
+threshold = main_hexagon_df['OHCA'].quantile(0.9, interpolation='nearest')
+main_hexagon_df.loc[main_hexagon_df['OHCA'] >= threshold, 'lvl2'] = 2
 
 # save as main_hexagon_df.csv
 main_hexagon_df.to_csv('main_hexagon_df.csv')
