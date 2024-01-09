@@ -114,7 +114,6 @@ cinncinati_hexagon_df.set_index('hex_id', inplace=True)
 main_hexagon_df = pd.concat([main_hexagon_df, cinncinati_hexagon_df], ignore_index=False, axis=0)
 # fill the NaN values with 0
 main_hexagon_df.fillna(0, inplace=True)
-main_hexagon_df.to_csv('main_hexagon_df.csv')
 
 # read the csv file
 poland_df = pd.read_csv('warszawa_osm.csv')
