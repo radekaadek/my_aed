@@ -63,7 +63,7 @@ test_x = test.drop(target, axis=1)
 test_y = test[target]
 
 # train tpot
-tpot = TPOTClassifier(verbosity=2, n_jobs=-1)
+tpot = TPOTClassifier(verbosity=2, n_jobs=-1, config_dict='TPOT light')
 tpot.fit(train_x, train_y)
 
 # save tpot model
