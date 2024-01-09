@@ -220,7 +220,6 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
     # fill them with 0s
     retv = retv.fillna(np.float32(0))
-    integer_columns = [col for col in retv.columns if retv[col].dtype == 'int64']
     # get neighbours of each hexagon
     processed = 0
     df_len = len(df)
@@ -245,14 +244,17 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     feature_df = get_feature_df(area_name, date=date, hexagon_res=hexagon_res)
     building_df = get_area_data(area_name, selector='building', tags_to_look_for=['amenity', 'building'], date=date)
     landuse_df = get_area_data(area_name, selector='landuse', tags_to_look_for=['landuse'], date=date)
+    leisure_df = get_area_data(area_name, selector='leisure', tags_to_look_for=['leisure'], date=date)
     s = time.time()
     building_area_df = get_area_df(building_df, hexagon_res)
     landuse_area_df = get_area_df(landuse_df, hexagon_res)
+    leisure_area_df = get_area_df(leisure_df, hexagon_res)
     e = time.time()
     print(f"Time to get area data: {e-s}")
     # merge the three dataframes
     retv = pd.merge(feature_df, building_area_df, on='hex_id', how='outer')
     retv = pd.merge(retv, landuse_area_df, on='hex_id', how='outer')
+    retv = pd.merge(retv, leisure_area_df, on='hex_id', how='outer')
     # set index to hex_id
     retv = retv.set_index('hex_id')
     # fill NaNs with 0
@@ -269,15 +271,15 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
 
 
 if __name__ == "__main__":
-    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    # a.to_csv('montgomery_osm.csv')
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    # c.to_csv('cincinnati_osm.csv')
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    # d.to_csv('virginia_beach_osm.csv')
-    # target = get_all_data("Warszawa")
-    # target.to_csv('warszawa_osm.csv')
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    a.to_csv('montgomery_osm.csv')
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c.to_csv('cincinnati_osm.csv')
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    d.to_csv('virginia_beach_osm.csv')
+    target = get_all_data("Warszawa")
+    target.to_csv('warszawa_osm.csv')
     # test get all data
-    sochocin = get_all_data("Sochocin", hexagon_res=9, get_neighbours=True)
-    print(sochocin)
+    # sochocin = get_all_data("Sochocin", hexagon_res=9, get_neighbours=True)
+    # print(sochocin)
     pass
