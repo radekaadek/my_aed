@@ -324,28 +324,35 @@ from functools import partial
 def process_hexagon(hex_id, df, retv):
     neighbours = h3.grid_disk(hex_id, 1)
     neighbours_in_df = [neighbour for neighbour in neighbours if neighbour in df.index]
+    updates = {}
     for col in df.columns:
         col_name = f'{col}_neighbour_count'
         n_val = np.float32(retv.loc[hex_id, col])
         for neighbour_col in neighbours_in_df:
-            retv.loc[neighbour_col, col_name] += n_val
-    return retv
+            if neighbour_col not in updates:
+                updates[neighbour_col] = {}
+            updates[neighbour_col][col_name] = retv.loc[neighbour_col, col_name] + n_val
+    return updates
 
 def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     retv = df.copy()
     retv = pd.concat([retv, pd.DataFrame(columns=[f'{col}_neighbour_count' for col in retv.columns])])
     retv = retv.fillna(np.float32(0))
 
-    # leave 2 cores for other stuff
     cores = max(mp.cpu_count() - 2, 1)
     with mp.Pool(cores) as pool:
         partial_func = partial(process_hexagon, df=df, retv=retv)
         results = pool.map(partial_func, df.index)
 
     # Combine results
+    all_updates = {}
     for result in results:
-        retv.update(result)
+        for key, value in result.items():
+            if key not in all_updates:
+                all_updates[key] = {}
+            all_updates[key].update(value)
 
+    retv.update(pd.DataFrame(all_updates).T)
     retv = retv.fillna(0)
     return retv
 
@@ -398,15 +405,15 @@ if __name__ == "__main__":
         # create the file
         with open(logfile, 'w') as f:
             pass
-    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    # a.to_csv('montgomery_osm.csv')
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    # c.to_csv('cincinnati_osm.csv')
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    # d.to_csv('virginia_beach_osm.csv')
-    # target = get_all_data("Warszawa")
-    # target.to_csv('warszawa_osm.csv')
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    a.to_csv('montgomery_osm.csv')
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c.to_csv('cincinnati_osm.csv')
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    d.to_csv('virginia_beach_osm.csv')
+    target = get_all_data("Warszawa")
+    target.to_csv('warszawa_osm.csv')
     # test get all data
-    test = get_all_data("Sochocin")
-    print(test)
+    # test = get_all_data("Sochocin")
+    # print(test)
     pass
