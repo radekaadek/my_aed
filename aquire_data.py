@@ -270,7 +270,13 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
         lats = [point['lat'] for point in geom]
         lons = [point['lon'] for point in geom]
         x, y = transformer.transform(lats, lons)
-        transformed_geometry.append(shapely.geometry.Polygon(zip(x, y)))
+        try:
+            transformed_geometry.append(shapely.geometry.Polygon(zip(x, y)))
+        except Exception as e:
+            # append to log file
+            with open(logfile, 'a') as f:
+                f.write(f"\nError: \n{e}\n")
+            transformed_geometry.append(shapely.geometry.Polygon())
     building_df['geometry2'] = transformed_geometry
     rows_to_add = []
     for _, row in building_df.iterrows():
