@@ -1,4 +1,4 @@
-from OSMPythonTools.overpass import Overpass, overpassQueryBuilder
+from OSMPythonTools.overpass import overpassQueryBuilder
 from OSMPythonTools.nominatim import Nominatim
 import requests
 import pandas as pd
@@ -17,21 +17,8 @@ def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dic
 
     node_name -- name of the node to get data from
     area_name -- name of the area to get data from
-    api -- overpass API object
+    date -- date of the data (default None)
     """
-    
-    # query = ""
-    # if date is not None: # to jeszcze nie dziala :(
-    #     query += f'[date:"{date}"];'
-    # else:
-    #     query += ''
-    # query += f'''
-    # area["name"="{area_name}"]->.a;
-    # (
-    #     node["{node_name}"](area.a);
-    # );
-    # out center;
-    # '''
     if date is None:
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -54,36 +41,22 @@ def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dic
         nodes.append({"geometry": node_geom, "type": name})
     return nodes
 
+def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: list[str] = ['amenity', 'building'], date: str = None) -> pd.DataFrame:
+    """Get area data from Overpass API in the form of a pandas DataFrame:
 
-def get_building_data(area_name: str, date: str = None) -> pd.DataFrame:
-    """Get building data from Overpass API in the form of a pandas DataFrame:
-
-    Building name, Geometry
+    Name, Geometry
 
     Keyword arguments:
 
     area_name -- name of the area to get data from
-    api -- overpass API object
     date -- date of the data (default None)
     """
-    # query = f"""
-    # [out:json][timeout:900];
-    # area["name"="{area_name}"]->.a;
-    # (
-    #     way["building"](area.a);
-    #     relation["building"](area.a);
-    # );
-    # out body;
-    # >;
-    # out geom;
-    # """
     if date is None:
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    ovapi = Overpass()
     nomatim = Nominatim()
     areaid = nomatim.query(area_name).areaId()
-    query = overpassQueryBuilder(area=areaid, elementType=['way', 'relation'], selector='building', out='body geom')
+    query = overpassQueryBuilder(area=areaid, elementType=['way', 'relation'], selector=selector, out='body geom')
     query = '[out:json][timeout:900];' + query
     print(f"Query: {query}")
     # r = ovapi.query(query, date=date, timeout=900)
@@ -91,78 +64,61 @@ def get_building_data(area_name: str, date: str = None) -> pd.DataFrame:
     # body is query
     req = requests.post(base_url, data=query, timeout=900)
     r = req.json()
-    buildings = []
-    for building in r['elements']:
-        if 'geometry' in building.keys():
-            geometry = building['geometry']
+    areas = []
+    for area in r['elements']:
+        if 'geometry' in area.keys():
+            geometry = area['geometry']
         else:
             continue
-        if 'tags' in building.keys():
-            if 'amenity' in building['tags'].keys():
-                name = building['tags']['amenity']
-            elif 'building' in building['tags'].keys():
-                name = building['tags']['building']
+        if 'tags' in area.keys():
+            for tag in tags_to_look_for:
+                if tag in area['tags'].keys():
+                    name = area['tags'][tag]
+                    break
             else:
                 name = 'unknown'
         else:
             name = 'unknown'
-        buildings.append({"name": name, "geometry": geometry})
-    retv = pd.DataFrame(buildings)
+        areas.append({"name": name, "geometry": geometry})
+    retv = pd.DataFrame(areas)
     return retv
 
 def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd.DataFrame:
     """Get feature data from Overpass API in the form of a DataFrame with one column 'name' and of which
-    values are teh number of features of that type in the area. The index is the hexagon id.
+    values are the number of features of that type in the area. The index is the hexagon id.
 
     Keyword arguments:
 
     area_name -- name of the area to get data from
-    api -- overpass API object
     date -- date of the data (default None)
+    hexagon_res -- resolution of the hexagon grid (default 9)
     """
     if date is None:
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    node_names = ['amenity', 'building', 'highway', 'public_transport',
-                  'government', 'leisure', 'office', 'emergency', 'natural',
-                  'advertising', 'craft', 'sport', 'tourism'] #natural not used emergency
-    amenities = get_point_data(node_names[0], area_name, date=date)
-    highways = get_point_data(node_names[2], area_name, date=date)
-    public_transport = get_point_data(node_names[3], area_name, date=date)
-    government = get_point_data(node_names[4], area_name, date=date)
-    leisure = get_point_data(node_names[5], area_name, date=date)
-    office = get_point_data(node_names[6], area_name, date=date)
-    emergency = get_point_data(node_names[7], area_name, date=date)
-    advertising = get_point_data(node_names[9], area_name, date=date)
-    craft = get_point_data(node_names[10], area_name, date=date)
-    sport = get_point_data(node_names[11], area_name, date=date)
-    tourism = get_point_data(node_names[12], area_name, date=date)
+    
+    node_names = ['amenity', 'highway', 'public_transport', 'government', 'leisure', 
+                  'office', 'emergency', 'advertising', 'craft', 'sport', 'tourism']
+
     pt_list = []
-    pt_list.extend(amenities)
-    pt_list.extend(highways)
-    pt_list.extend(leisure)
-    pt_list.extend(office)
-    pt_list.extend(government)
-    pt_list.extend(public_transport)
-    pt_list.extend(emergency)
-    pt_list.extend(advertising)
-    pt_list.extend(craft)
-    pt_list.extend(sport)
-    pt_list.extend(tourism)
-    # create a dataframe
-    retv = pd.DataFrame(columns=['hex_id', 'name'])
-    for amenity in amenities:
-        hex_id = h3.latlng_to_cell(amenity['geometry'][0], amenity['geometry'][1], hexagon_res)
-        retv.loc[len(retv)] = {'hex_id': hex_id, 'name': amenity['type']}
-    retv = retv.groupby(['hex_id', 'name']).size()
-    retv = retv.reset_index()
-    # pivot the table
-    retv = retv.pivot(index='hex_id', columns='name', values=0)
-    # fill NaNs with 0
-    retv = retv.fillna(0)
+    for node in node_names:
+        pt_list.extend(get_point_data(node, area_name, date=date))
+
+    # create a dictionary
+    data = {'hex_id': [], 'name': []}
+    for point in pt_list:
+        hex_id = h3.latlng_to_cell(point['geometry'][0], point['geometry'][1], hexagon_res)
+        data['hex_id'].append(hex_id)
+        data['name'].append(point['type'])
+
+    # convert the dictionary to a DataFrame
+    retv = pd.DataFrame(data)
+
+    retv = retv.groupby(['hex_id', 'name']).size().reset_index().pivot(index='hex_id', columns='name', values=0).fillna(0)
+
     return retv
 
-def cells_to_polygon(cells: set[str], hexagon_res: int = 9) -> shapely.geometry.Polygon:
+def cells_to_polygon(cells: set[str]) -> shapely.geometry.Polygon:
     """Converts a set of cells to a polygon.
 
     Keyword arguments:
@@ -223,7 +179,7 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
             # add cells fully inside
             h3_cells.update(h3.polygon_to_cells(h3_poly, hexagon_res))
             # convert to a bounding polygon
-            hex_bpoly_4326 = cells_to_polygon(h3_cells, hexagon_res)
+            hex_bpoly_4326 = cells_to_polygon(h3_cells)
             # transform to EPSG:3857
             # get polygon coords
             x, y = hex_bpoly_4326.exterior.coords.xy
@@ -287,13 +243,16 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
 def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = True, date: str = None) -> pd.DataFrame:
     # combine data from get_feature_df and get_area_df
     feature_df = get_feature_df(area_name, date=date, hexagon_res=hexagon_res)
-    building_df = get_building_data(area_name, date=date)
+    building_df = get_area_data(area_name, selector='building', tags_to_look_for=['amenity', 'building'], date=date)
+    landuse_df = get_area_data(area_name, selector='landuse', tags_to_look_for=['landuse'], date=date)
     s = time.time()
-    area_df = get_area_df(building_df, hexagon_res)
+    building_area_df = get_area_df(building_df, hexagon_res)
+    landuse_area_df = get_area_df(landuse_df, hexagon_res)
     e = time.time()
     print(f"Time to get area data: {e-s}")
-    # merge the two dataframes
-    retv = pd.merge(feature_df, area_df, on='hex_id', how='outer')
+    # merge the three dataframes
+    retv = pd.merge(feature_df, building_area_df, on='hex_id', how='outer')
+    retv = pd.merge(retv, landuse_area_df, on='hex_id', how='outer')
     # set index to hex_id
     retv = retv.set_index('hex_id')
     # fill NaNs with 0
@@ -307,16 +266,18 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
         e = time.time()
         print(f"Time to add neighbours: {e-s}")
     return retv
+
+
 if __name__ == "__main__":
-    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    a.to_csv('montgomery_osm.csv')
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    c.to_csv('cincinnati_osm.csv')
-    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    d.to_csv('virginia_beach_osm.csv')
-    target = get_all_data("Warszawa")
-    target.to_csv('warszawa_osm.csv')
+    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    # a.to_csv('montgomery_osm.csv')
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c.to_csv('cincinnati_osm.csv')
+    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    # d.to_csv('virginia_beach_osm.csv')
+    # target = get_all_data("Warszawa")
+    # target.to_csv('warszawa_osm.csv')
     # test get all data
-    # sochocin = get_all_data("Płońsk", hexagon_res=9)
-    # sochocin.to_csv('plonsk_osm.csv')
+    sochocin = get_all_data("Sochocin", hexagon_res=9, get_neighbours=True)
+    print(sochocin)
     pass
