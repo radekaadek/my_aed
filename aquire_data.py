@@ -370,6 +370,8 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     retv = pd.merge(feature_df, building_area_df, on='hex_id', how='outer')
     retv = pd.merge(retv, landuse_area_df, on='hex_id', how='outer')
     retv = pd.merge(retv, leisure_area_df, on='hex_id', how='outer')
+    # add prefix line_ to line_df columns
+    line_df.columns = [f"line_{col}" for col in line_df.columns]
     retv = pd.merge(retv, line_df, on='hex_id', how='outer')
     # set index to hex_id
     retv = retv.set_index('hex_id')
