@@ -78,6 +78,27 @@ def get_line_data(node_name: str, area_name: str, date: str = None) -> list[dict
         ways.append(el)
     return ways
 
+import multiprocessing as mp
+from functools import partial
+
+def process_line(line):
+    hexes = set()
+    for point in line['geometry']:
+        hexes.add(h3.latlng_to_cell(point['lat'], point['lon'], 9))
+    retv = {}
+    for hexagon in hexes:
+        h3_input = [(point['lat'], point['lon']) for point in line['geometry']]
+        len = line_hexagon_length(h3_input, hexagon)
+        name = line['type']
+        if hexagon in retv.keys():
+            if name in retv[hexagon].keys():
+                retv[hexagon][name] += len
+            else:
+                retv[hexagon][name] = len
+        else:
+            retv[hexagon] = {name: len}
+    return retv
+
 def get_line_df(line_data: list[dict]) -> pd.DataFrame:
     """Convert line data to a DataFrame with columns:
 
@@ -89,25 +110,23 @@ def get_line_df(line_data: list[dict]) -> pd.DataFrame:
 
     line_data -- list of dictionaries with line data
     """
-    # input data:
-    # [{'geometry': [{'lat': 50.2417639, 'lon': 20.723122}, {'lat': 50.2417077, 'lon': 20.7231886}, {'lat': 50.2411756, 'lon': 20.7238183}], 'type': 'highway'}, {'geometry': [{'lat': 50.24042, 'lon': 20.7183544}, {'lat': 50.2404546, 'lon': 20.718521}, {'lat': 50.2404714, 'lon': 20.718619}, {'lat': 50.2405076, 'lon': 20.7188718}, {'lat': 50.2406439, 'lon': 20.7200494}, {'lat': 50.2406854, 'lon': 20.720379}, {'lat': 50.2407154, 'lon': 20.7205757}, {'lat': 50.2407444, 'lon': 20.720717}, {'lat': 50.240808, 'lon': 20.7209736}, {'lat': 50.2408799, 'lon': 20.7211982}, {'lat': 50.2410184, 'lon': 20.7215398}, {'lat': 50.2413235, 'lon': 20.722232}, {'lat': 50.2415226, 'lon': 20.7226517}, {'lat': 50.2416862, 'lon': 20.7229742}, {'lat': 50.2417639, 'lon': 20.723122}], 'type': 'highway'}, {'geometry': [{'lat': 50.2425086, 'lon': 20.7258192}, {'lat': 50.2430309, 'lon': 20.7258879}, {'lat': 50.2430919, 'lon': 20.7258524}],
-    # create a dictionary
+    # create a pool of workers
+    cpus = max(mp.cpu_count() - 2, 1)
+    with mp.Pool(cpus) as pool:
+        results = pool.map(process_line, line_data)
+
+    # merge results
     retv = {}
-    for line in line_data:
-        hexes = set()
-        for point in line['geometry']:
-            hexes.add(h3.latlng_to_cell(point['lat'], point['lon'], 9))
-        for hexagon in hexes:
-            h3_input = [(point['lat'], point['lon']) for point in line['geometry']]
-            len = line_hexagon_length(h3_input, hexagon)
-            name = line['type']
-            if hexagon in retv.keys():
-                if name in retv[hexagon].keys():
-                    retv[hexagon][name] += len
-                else:
-                    retv[hexagon][name] = len
+    for result in results:
+        for hexagon, data in result.items():
+            if hexagon in retv:
+                for name, len in data.items():
+                    if name in retv[hexagon]:
+                        retv[hexagon][name] += len
+                    else:
+                        retv[hexagon][name] = len
             else:
-                retv[hexagon] = {name: len}
+                retv[hexagon] = data
 
     # convert the dictionary to a dataframe
     retv = pd.DataFrame(retv).T
@@ -372,6 +391,10 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     landuse_area_df = get_area_df(landuse_df, hexagon_res)
     leisure_area_df = get_area_df(leisure_df, hexagon_res)
     e = time.time()
+    # add prefix area_ to area_df columns, dont change hex_id
+    building_area_df.columns = [f"area_{col}" if col != 'hex_id' else col for col in building_area_df.columns]
+    landuse_area_df.columns = [f"area_{col}" if col != 'hex_id' else col for col in landuse_area_df.columns]
+    leisure_area_df.columns = [f"area_{col}" if col != 'hex_id' else col for col in leisure_area_df.columns]
     print(f"Time to get area data: {e-s}")
     # merge the dfs
     retv = pd.merge(feature_df, building_area_df, on='hex_id', how='outer')
@@ -405,15 +428,15 @@ if __name__ == "__main__":
         # create the file
         with open(logfile, 'w') as f:
             pass
-    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    a.to_csv('montgomery_osm.csv')
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    c.to_csv('cincinnati_osm.csv')
-    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    d.to_csv('virginia_beach_osm.csv')
-    target = get_all_data("Warszawa")
-    target.to_csv('warszawa_osm.csv')
+    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    # a.to_csv('montgomery_osm.csv')
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c.to_csv('cincinnati_osm.csv')
+    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    # d.to_csv('virginia_beach_osm.csv')
+    # target = get_all_data("Warszawa")
+    # target.to_csv('warszawa_osm.csv')
     # test get all data
-    # test = get_all_data("Sochocin")
-    # print(test)
+    test = get_all_data("Sochocin")
+    print(test)
     pass
