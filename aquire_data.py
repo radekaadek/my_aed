@@ -428,15 +428,15 @@ if __name__ == "__main__":
         # create the file
         with open(logfile, 'w') as f:
             pass
-    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    # a.to_csv('montgomery_osm.csv')
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    # c.to_csv('cincinnati_osm.csv')
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    # d.to_csv('virginia_beach_osm.csv')
-    # target = get_all_data("Warszawa")
-    # target.to_csv('warszawa_osm.csv')
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    a.to_csv('montgomery_osm.csv')
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c.to_csv('cincinnati_osm.csv')
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    d.to_csv('virginia_beach_osm.csv')
+    target = get_all_data("Warszawa")
+    target.to_csv('warszawa_osm.csv')
     # test get all data
-    test = get_all_data("Sochocin")
-    print(test)
+    # test = get_all_data("Sochocin")
+    # print(test)
     pass
