@@ -82,30 +82,18 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 
 # Now for the OSM data
 
-
 # now read virginia_beach data
-main_hexagon_df = pd.read_csv('virginia_beach_osm.csv')
-main_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
+main_hexagon_df = pd.read_csv('osm_with_neighbours_save.csv')
+print(main_hexagon_df.head())
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df.set_index('hex_id', inplace=True)
+main_hexagon_df['OHCA'] = 0
 
+# add the OHCA counts to the main DataFrame
+for hex_id, ohca in main_ohca_df.iterrows():
+    if hex_id in main_hexagon_df.index:
+        main_hexagon_df.loc[hex_id, 'OHCA'] = ohca['OHCA']
 
-# add montgomery
-mtgmry_hexagon_df = pd.read_csv('montgomery_osm.csv')
-mtgmry_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-# pivot the dataframe to have the hex_id as the index
-mtgmry_hexagon_df.set_index('hex_id', inplace=True)
-main_hexagon_df = pd.concat([main_hexagon_df, mtgmry_hexagon_df], ignore_index=False, axis=0)
-# add the OHCA count to the main dataframe
-main_hexagon_df = pd.concat([main_hexagon_df, main_ohca_df], ignore_index=False, axis=1)
-
-
-# add cinncinati
-cinncinati_hexagon_df = pd.read_csv('cincinnati_osm.csv')
-cinncinati_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-# pivot the dataframe to have the hex_id as the index
-cinncinati_hexagon_df.set_index('hex_id', inplace=True)
-main_hexagon_df = pd.concat([main_hexagon_df, cinncinati_hexagon_df], ignore_index=False, axis=0)
 
 # Now for the target OSM data
 

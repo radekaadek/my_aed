@@ -250,9 +250,7 @@ def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
     try:
         hex_bpoly = shapely.geometry.Polygon(zip(x, y))
     except Exception as e:
-        # append to log file
-        with open(logfile, 'a') as f:
-            f.write(f"\nError: \n{e}\n")
+        print(e)
         return 0
     # get area of the intersection
     intersection = hex_bpoly.intersection(shapely.geometry.LineString(line))
@@ -391,11 +389,11 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     # convert all data to float32
     retv = retv.astype(np.float32)
     # sum data from neighbours and add to dataframe as {feature}_neighbour_count
-    if get_neighbours:
-        s = time.time()
-        retv = add_neighbours(retv)
-        e = time.time()
-        print(f"Time to add neighbours: {e-s}")
+    # if get_neighbours:
+    #     s = time.time()
+    #     retv = add_neighbours(retv)
+    #     e = time.time()
+    #     print(f"Time to add neighbours: {e-s}")
     return retv
 
 
@@ -407,20 +405,21 @@ if __name__ == "__main__":
         # create the file
         with open(logfile, 'w') as f:
             pass
-    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
     # a.to_csv('montgomery_osm.csv')
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
     # c.to_csv('cincinnati_osm.csv')
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
     # d.to_csv('virginia_beach_osm.csv')
-    # target = get_all_data("Warszawa")
-    # target.to_csv('warszawa_osm.csv')
-    # test get all data
-    test = get_all_data("Sochocin")
-    print(test)
-    # print column sums next to their neighbour counts
-    cols = test.columns
-    for col in cols:
-        if not col.endswith('_neighbour_count'):
-            print(f"{col}: {test[col].sum()}, {col}_neighbour_count: {test[f'{col}_neighbour_count'].sum()}")
+    target = get_all_data("Warszawa")
+    target.to_csv('warszawa_osm.csv')
+    # concatinate all csvs to a single csv
+    final = pd.concat([a, c, d], axis=0, ignore_index=False)
+    # fill NaNs with 0s
+    final = final.fillna(0)
+    # drop row with all 0s
+    print("Ending")
+    final = final[(final.T != 0).any()]
+    print("Wrtiting to file")
+    final.to_csv('osm_data.csv')
     pass

@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/main.dir/main.cpp.o -o bin/main  /usr/local/lib/libh3.a -lm 
