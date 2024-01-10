@@ -8,7 +8,7 @@ target = 'predictions'
 h2o.init()
 
 # load jar model
-model_path = "StackedEnsemble_BestOfFamily_7_AutoML_1_20240109_224222"
+model_path = "StackedEnsemble_AllModels_3_AutoML_1_20240110_125537"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)
@@ -36,3 +36,4 @@ data['hex_id'] = input_data['Unnamed: 0']
 data.set_index('hex_id', inplace=True)
 # save to csv
 data.to_csv('predictions.csv')
+

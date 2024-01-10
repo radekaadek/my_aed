@@ -130,7 +130,7 @@ for col in main_cols:
         del main_hexagon_df[col]
 
 # group ohca values by 1, 2
-main_hexagon_df['lvl2'] = main_hexagon_df['OHCA'].apply(lambda x: 1 if x <= 1 else x)
+main_hexagon_df['lvl2'] = main_hexagon_df['OHCA']
 # take top 10% of the hexagons and assign lvl2 to 1
 # threshold = main_hexagon_df['OHCA'].quantile(0.9, interpolation='nearest')
 # main_hexagon_df.loc[main_hexagon_df['OHCA'] >= threshold, 'lvl2'] = 2

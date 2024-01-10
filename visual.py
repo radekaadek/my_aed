@@ -33,7 +33,7 @@ top_10_hexagons = poland_df[poland_df['aed_count'] == 0].sort_values(by=target, 
 
 # add hexagons with opacity based on the number of ohca
 for i, row in poland_df.iterrows():
-    fill_value = min((np.round(row[target]) // 2) / max_ohca, 0.9)
+    fill_value = row[target] / max_ohca
     if row['aed_count'] == 0:
         # if its in top 10 hexagons make it blue
         if i in top_10_hexagons.index:
