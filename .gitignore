@@ -4,6 +4,8 @@ mtgmry_unfiltered.csv
 apikey.txt
 Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv
 Emergency_Medical_Service__EMS__Incidents_20240107.csv
+osm_with_neighbours_save.csv
+warszawa_osm.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
