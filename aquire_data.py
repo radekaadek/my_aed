@@ -349,7 +349,7 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     for hexagon in retv.index:
         neighbours = h3.grid_disk(hexagon, 1)
         for neighbour in neighbours:
-            if neighbour in retv.index:
+            if neighbour in retv.index and neighbour != hexagon:
                 for col in basic_cols:
                     retv.loc[neighbour, f'{col}_neighbour_count'] += retv.loc[hexagon, col]
     return retv
