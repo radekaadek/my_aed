@@ -84,9 +84,7 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('osm_with_neighbours_save.csv')
-print(main_hexagon_df.head())
 # pivot the dataframe to have the hex_id as the index
-main_hexagon_df.set_index('hex_id', inplace=True)
 main_hexagon_df['OHCA'] = 0
 
 # add the OHCA counts to the main DataFrame
