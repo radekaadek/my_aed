@@ -1,13 +1,12 @@
 # draw the map
+import numpy as np
 import requests
 import pandas as pd
 import h3
 
 target = 'predictions'
 poland_df = pd.read_csv('predictions.csv')
-print(poland_df['predictions'].unique())
 poland_df.set_index('hex_id', inplace=True)
-print(poland_df.head())
 
 aed_url = 'https://aed.openstreetmap.org.pl/aed_poland.geojson'
 aed_file = requests.get(aed_url)
@@ -27,21 +26,22 @@ import folium
 
 m = folium.Map(location=[52.2297, 21.0122], zoom_start=11)
 
-max_ohca = poland_df[target].max()
+max_ohca = np.round(poland_df[target].max())
 
 # get top 10 hexagons with the most predicted ohca that have no defibrillators or hospitals
 top_10_hexagons = poland_df[poland_df['aed_count'] == 0].sort_values(by=target, ascending=False).head(10)
 
 # add hexagons with opacity based on the number of ohca
 for i, row in poland_df.iterrows():
-    if row['aed_count'] == 0 and row['hospital_x'] == 0:
+    fill_value = min((np.round(row[target]) // 2) / max_ohca, 0.9)
+    if row['aed_count'] == 0:
         # if its in top 10 hexagons make it blue
         if i in top_10_hexagons.index:
             folium.Polygon(
                 locations=h3.cell_to_boundary(i),
                 color='blue',
                 fill_color='blue',
-                fill_opacity=min(row[target] / max_ohca, 0.9),
+                fill_opacity=fill_value,
                 popup='Predicted OHCA: {}'.format(row[target])
             ).add_to(m)
         else:
@@ -49,7 +49,7 @@ for i, row in poland_df.iterrows():
                 locations=h3.cell_to_boundary(i),
                 color='red',
                 fill_color='red',
-                fill_opacity=min(row[target] / max_ohca, 0.9),
+                fill_opacity=fill_value,
                 popup='Predicted OHCA: {}'.format(row[target])
             ).add_to(m)
     else:
@@ -57,7 +57,7 @@ for i, row in poland_df.iterrows():
             locations=h3.cell_to_boundary(i),
             color='green',
             fill_color='green',
-            fill_opacity=min(row[target] / max_ohca, 0.9),
+            fill_opacity=fill_value,
             popup='Predicted OHCA: {}'.format(row[target])
         ).add_to(m)
 m.save('warsaw.html')
