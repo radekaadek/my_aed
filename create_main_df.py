@@ -19,7 +19,7 @@ else:
     # read the third sheet of the excel file
     vb_ohca_in = pd.read_excel(file_bytes, sheet_name=3)
 
-def hexid_ohca(df: pd.DataFrame, lat_col: str, lon_col: str, res: int = 9) -> pd.DataFrame:
+def hexid_ohca(df: pd.DataFrame, lat_col: str, lon_col: str, res: int = 9) -> dict:
     """
     This function takes a dataframe of OHCA incidents and returns a dictionary
     with the hex_id as the key and the count
@@ -45,9 +45,9 @@ def hexid_ohca(df: pd.DataFrame, lat_col: str, lon_col: str, res: int = 9) -> pd
 
 
 hexid_ohca_cnt = hexid_ohca(vb_ohca_in, 'Latitude', 'Longitude', 9)
-
 # create a dataframe from the dictionary with the hex_id as the index
 main_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['OHCA'])
+
 
 mtgmry_ohca_df = pd.read_csv('montgomery/mtgmry_unfiltered.csv')
 # filter by 'title' containing 'CARDIAC ARREST'
@@ -55,20 +55,11 @@ mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['title'].str.contains('CARDIAC AR
 # timeStamp contatins 2017 2018 2019
 mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['timeStamp'].str.contains('2017|2018|2019')]
 # create a dictionary to hold the counts of OHCA in each hex_id
-hexid_ohca_cnt = {}
-# iterate through the rows of the dataframe
-for i, row in mtgmry_ohca_df.iterrows():
-    # get the hex_id for each row
-    hex_id = h3.latlng_to_cell(np.float64(row['lat']), np.float64(row['lng']), 9)
-    # if the hex_id is not in the dictionary, add it
-    if hex_id not in hexid_ohca_cnt:
-        hexid_ohca_cnt[hex_id] = 0
-    # increment the count of OHCA in the hex_id
-    hexid_ohca_cnt[hex_id] += 1
-
+hexid_ohca_cnt = hexid_ohca(mtgmry_ohca_df, 'lat', 'lng', 9)
 mtgmry_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
 main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axis=0)
+
 
 # read cinncinati data
 cinncinati_ohca_df = pd.read_csv('cincinnati/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
@@ -81,13 +72,16 @@ cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].fillna('', inplace=True)
 cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].str.contains('CARDIAC')]
 # filter CREATE_TIME_INCIDENT containing 2017 2018 2019
 cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2017|2018|2019')]
-
 # create a dictionary to hold the counts of OHCA in each hex_id
-hexid_ohca_cin = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
+cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
 # create a dataframe from the dictionary with the hex_id as the index
-cinncinati_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cin, orient='index', columns=['OHCA'])
+cinncinati_ohca_df = pd.DataFrame.from_dict(cincin_hex_ohca, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
 main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0)
+
+
+# Now for the OSM data
+
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('virginia_beach_osm.csv')
@@ -95,16 +89,16 @@ main_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df.set_index('hex_id', inplace=True)
 
+
 # add montgomery
 mtgmry_hexagon_df = pd.read_csv('montgomery_osm.csv')
 mtgmry_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 mtgmry_hexagon_df.set_index('hex_id', inplace=True)
 main_hexagon_df = pd.concat([main_hexagon_df, mtgmry_hexagon_df], ignore_index=False, axis=0)
-
 # add the OHCA count to the main dataframe
 main_hexagon_df = pd.concat([main_hexagon_df, main_ohca_df], ignore_index=False, axis=1)
-# save to a csv file
+
 
 # add cinncinati
 cinncinati_hexagon_df = pd.read_csv('cincinnati_osm.csv')
@@ -112,8 +106,8 @@ cinncinati_hexagon_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 cinncinati_hexagon_df.set_index('hex_id', inplace=True)
 main_hexagon_df = pd.concat([main_hexagon_df, cinncinati_hexagon_df], ignore_index=False, axis=0)
-# fill the NaN values with 0
-main_hexagon_df.fillna(0, inplace=True)
+
+# Now for the target OSM data
 
 # read the csv file
 poland_df = pd.read_csv('warszawa_osm.csv')
@@ -121,14 +115,13 @@ poland_df = pd.read_csv('warszawa_osm.csv')
 poland_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 # pivot the dataframe to have the hex_id as the index
 poland_df.set_index('hex_id', inplace=True)
+
 # delete columns not in training data
 main_cols = list(main_hexagon_df.columns)
 poland_cols = list(poland_df.columns)
 for col in poland_cols:
     if col not in main_cols:
         del poland_df[col]
-# fill the NaN values with 0
-
 # drop columns in main_hexagon_df that are not in poland_df
 main_cols = list(main_hexagon_df.columns)
 poland_cols = list(poland_df.columns)
@@ -142,5 +135,9 @@ main_hexagon_df['lvl2'] = 1
 threshold = main_hexagon_df['OHCA'].quantile(0.9, interpolation='nearest')
 main_hexagon_df.loc[main_hexagon_df['OHCA'] >= threshold, 'lvl2'] = 2
 
+# fill NaN values with 0
+main_hexagon_df.fillna(0, inplace=True)
+
 # save as main_hexagon_df.csv
 main_hexagon_df.to_csv('main_hexagon_df.csv')
+
