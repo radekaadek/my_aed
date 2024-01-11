@@ -36,7 +36,7 @@ h2o_df = h2o.H2OFrame(main_df)
 x = list(main_df.columns)
 y = target
 
-aml = H2OAutoML(seed=1, max_runtime_secs=60)
+aml = H2OAutoML(seed=1, max_runtime_secs=3600)
 aml.train(x=x, y=y, training_frame=h2o_df)
 
 lb = aml.leaderboard
