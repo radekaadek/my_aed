@@ -1,1 +1,1 @@
-/home/CENAGIS/rdabkowski/my_aed/GBM_grid_1_AutoML_1_20240111_233858_model_4
+GBM_grid_1_AutoML_1_20240111_233858_model_4

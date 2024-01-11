@@ -38,6 +38,7 @@ leader_model = aml.leader
 model_path = h2o.save_model(model=leader_model, path=".", force=True)
 
 with open('model_path.txt', 'w') as f:
-    f.write(model_path)
+    # write stuff after the las /
+    f.write(model_path.split('/')[-1])
 # Shutdown h2o
 h2o.cluster().shutdown()
