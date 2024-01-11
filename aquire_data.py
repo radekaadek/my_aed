@@ -75,23 +75,6 @@ def get_line_data(node_name: str, area_name: str, date: str = None) -> list[dict
         ways.append(el)
     return ways
 
-def process_line(line):
-    hexes = set()
-    for point in line['geometry']:
-        hexes.add(h3.latlng_to_cell(point['lat'], point['lon'], 9))
-    retv = {}
-    for hexagon in hexes:
-        h3_input = [(point['lat'], point['lon']) for point in line['geometry']]
-        len = line_hexagon_length(h3_input, hexagon)
-        name = line['type']
-        if hexagon in retv.keys():
-            if name in retv[hexagon].keys():
-                retv[hexagon][name] += len
-            else:
-                retv[hexagon][name] = len
-        else:
-            retv[hexagon] = {name: len}
-    return retv
 
 def get_line_df(line_data: list[dict]) -> pd.DataFrame:
     """Convert line data to a DataFrame with columns:
@@ -104,30 +87,22 @@ def get_line_df(line_data: list[dict]) -> pd.DataFrame:
 
     line_data -- list of dictionaries with line data
     """
-    # process the data
-    results = []
-
-    # merge results
-    retv = {}
-    for result in results:
-        for hexagon, data in result.items():
-            if hexagon in retv:
-                for name, len in data.items():
-                    if name in retv[hexagon]:
-                        retv[hexagon][name] += len
-                    else:
-                        retv[hexagon][name] = len
-            else:
-                retv[hexagon] = data
-
-    # convert the dictionary to a dataframe
-    retv = pd.DataFrame(retv).T
-    # set index Name
-    retv.index.name = 'hex_id'
-    # fill NaNs with 0s
-    retv = retv.fillna(0)
+    # create a dictionary
+    data_for_df = {'hex_id': [], 'name': [], 'length': []}
+    for line in line_data:
+        hexes = {h3.latlng_to_cell(point['lat'], point['lon'], 9) for point in line['geometry']}
+        for hexagon in hexes:
+            length = line_hexagon_length([(point['lat'], point['lon']) for point in line['geometry']], hexagon)
+            data_for_df['hex_id'].append(hexagon)
+            data_for_df['name'].append(line['type'])
+            data_for_df['length'].append(length)
+    # transpose the dictionary
+    retv = pd.DataFrame(data_for_df)
+    # set index to hex_id
+    # transpose the DataFrame
+    retv = retv.pivot_table(index='hex_id', columns='name', values='length', aggfunc='sum', fill_value=0)
     return retv
-    
+
 
 def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: list[str] = ['amenity', 'building'], date: str = None) -> pd.DataFrame:
     """Get area data from Overpass API in the form of a pandas DataFrame:
@@ -225,6 +200,9 @@ def cells_to_polygon(cells: set[str]) -> shapely.geometry.Polygon:
     retv = shapely.geometry.Polygon(h3_input)
     return retv
 
+inproj = pyproj.Proj('EPSG:4326')
+outproj = pyproj.Proj('EPSG:3857')
+transformer = pyproj.Transformer.from_proj(inproj, outproj)
 def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
     """Calculate the length of a line that is inside a hexagon.
 
@@ -238,17 +216,21 @@ def line_hexagon_length(line: list[tuple[float, float]], hexagon: str) -> float:
     hex_bpoly_4326 = cells_to_polygon({hexagon})
     # get polygon coords
     x, y = hex_bpoly_4326.exterior.coords.xy
+    # transform
+    x, y = transformer.transform(x, y)
+    # transform line to EPSG:3857
+    lats = [point[0] for point in line]
+    lons = [point[1] for point in line]
+    line_x, line_y = transformer.transform(lats, lons)
     # create a polygon
-    try:
-        hex_bpoly = shapely.geometry.Polygon(zip(x, y))
-    except Exception as e:
-        print(e)
-        return 0
-    # get area of the intersection
-    intersection = hex_bpoly.intersection(shapely.geometry.LineString(line))
-    return intersection.length
-
-# def get_line_df(line_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame:
+    hex_bpoly = shapely.geometry.Polygon(zip(x, y))
+    # create a line
+    line = shapely.geometry.LineString(zip(line_x, line_y))
+    # get intersection
+    intersection = hex_bpoly.intersection(line)
+    # get length
+    length = intersection.length
+    return length
 
 
 def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame:
@@ -366,10 +348,6 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
     retv = pd.merge(feature_df, building_area_df, on='hex_id', how='outer')
     retv = pd.merge(retv, landuse_area_df, on='hex_id', how='outer')
     retv = pd.merge(retv, leisure_area_df, on='hex_id', how='outer')
-    # only merge the columns that are in retv with line_df
-    line_df = line_df[line_df.columns.intersection(retv.columns)]
-    # add prefix line_ to line_df columns
-    line_df.columns = [f"line_{col}" for col in line_df.columns]
     retv = pd.merge(retv, line_df, on='hex_id', how='outer')
     # set index to hex_id
     retv = retv.set_index('hex_id')
@@ -398,4 +376,4 @@ if __name__ == "__main__":
     final.to_csv('osm_data.csv')
     target = get_all_data("Warszawa")
     target.to_csv('warszawa_osm.csv')
-    # close the pool
+

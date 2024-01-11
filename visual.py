@@ -49,7 +49,8 @@ for _, row in poland_df.iterrows():
                 color='blue',
                 fill_color='blue',
                 fill_opacity=fill_value,
-                popup='Predicted OHCA: {}'.format(row[target])
+                popup='Predicted OHCA: {}'.format(row[target]),
+                # set border thickness
             ).add_to(m)
         else:
             folium.Polygon(
@@ -57,7 +58,8 @@ for _, row in poland_df.iterrows():
                 color='red',
                 fill_color='red',
                 fill_opacity=fill_value,
-                popup='Predicted OHCA: {}'.format(row[target])
+                popup='Predicted OHCA: {}'.format(row[target]),
+                weight=3
             ).add_to(m)
     else:
         folium.Polygon(
