@@ -11,7 +11,7 @@ print(main_df.head())
 # shuffle rows
 main_df = main_df.sample(frac=1)
 
-h2o.init(max_mem_size='4G')
+h2o.init(max_mem_size='60G')
 # drop the unnamed column
 main_df = main_df.drop(['Unnamed: 0'], axis=1)
 h2o_df = h2o.H2OFrame(main_df)
@@ -21,7 +21,7 @@ y = target
 # Exclude this
 excluded_algos = ["StackedEnsemble"]
 
-aml = H2OAutoML(seed=1, max_runtime_secs=60, exclude_algos=excluded_algos)
+aml = H2OAutoML(seed=1, max_runtime_secs=3600, exclude_algos=excluded_algos)
 aml.train(x=x, y=y, training_frame=h2o_df)
 
 lb = aml.leaderboard
