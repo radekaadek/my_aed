@@ -4,9 +4,11 @@ import requests
 import pandas as pd
 import h3
 
-target = 'predictions'
+target = 'OHCA'
 poland_df = pd.read_csv('predictions.csv')
-poland_df.set_index('hex_id', inplace=True)
+# delete the first row
+# print the last 5 rows
+print(poland_df.tail())
 
 aed_url = 'https://aed.openstreetmap.org.pl/aed_poland.geojson'
 aed_file = requests.get(aed_url)
@@ -32,13 +34,18 @@ max_ohca = np.round(poland_df[target].max())
 top_10_hexagons = poland_df[poland_df['aed_count'] == 0].sort_values(by=target, ascending=False).head(10)
 
 # add hexagons with opacity based on the number of ohca
-for i, row in poland_df.iterrows():
+for _, row in poland_df.iterrows():
+    i = row['hex_id']
+    try:
+        locations = h3.cell_to_boundary(i)
+    except: # i am too tired of this
+        continue
     fill_value = row[target] / max_ohca
     if row['aed_count'] == 0:
         # if its in top 10 hexagons make it blue
         if i in top_10_hexagons.index:
             folium.Polygon(
-                locations=h3.cell_to_boundary(i),
+                locations=locations,
                 color='blue',
                 fill_color='blue',
                 fill_opacity=fill_value,
@@ -46,7 +53,7 @@ for i, row in poland_df.iterrows():
             ).add_to(m)
         else:
             folium.Polygon(
-                locations=h3.cell_to_boundary(i),
+                locations=locations,
                 color='red',
                 fill_color='red',
                 fill_opacity=fill_value,
@@ -54,7 +61,7 @@ for i, row in poland_df.iterrows():
             ).add_to(m)
     else:
         folium.Polygon(
-            locations=h3.cell_to_boundary(i),
+            locations=locations,
             color='green',
             fill_color='green',
             fill_opacity=fill_value,

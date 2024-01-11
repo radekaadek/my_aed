@@ -96,34 +96,27 @@ for hex_id, ohca in main_ohca_df.iterrows():
 # Now for the target OSM data
 
 # read the csv file
-poland_df = pd.read_csv('warszawa_osm.csv')
-# set unnamed column name to hex_id
-poland_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-# pivot the dataframe to have the hex_id as the index
-poland_df.set_index('hex_id', inplace=True)
+poland_df = pd.read_csv('warszawa_osm_neighbours.csv')
 
 # delete columns not in training data
-main_cols = list(main_hexagon_df.columns)
 poland_cols = list(poland_df.columns)
+main_cols = list(main_hexagon_df.columns)
 for col in poland_cols:
     if col not in main_cols:
         del poland_df[col]
 # drop columns in main_hexagon_df that are not in poland_df
-main_cols = list(main_hexagon_df.columns)
-poland_cols = list(poland_df.columns)
 for col in main_cols:
     if col not in poland_cols and col != 'OHCA':
         del main_hexagon_df[col]
 
-# group ohca values by 1, 2
-main_hexagon_df['lvl2'] = main_hexagon_df['OHCA']
-# take top 10% of the hexagons and assign lvl2 to 1
-# threshold = main_hexagon_df['OHCA'].quantile(0.9, interpolation='nearest')
-# main_hexagon_df.loc[main_hexagon_df['OHCA'] >= threshold, 'lvl2'] = 2
-
 # fill NaN values with 0
 main_hexagon_df.fillna(0, inplace=True)
 
+# delete rows with all columns equal to 0
+main_hexagon_df = main_hexagon_df[(main_hexagon_df.T != 0).any()]
 # save as main_hexagon_df.csv
+poland_df.drop(['hex_id'], axis=1, inplace=True)
+poland_df.to_csv('target.csv')
+main_hexagon_df.drop(['hex_id'], axis=1, inplace=True)
 main_hexagon_df.to_csv('main_hexagon_df.csv')
 

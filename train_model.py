@@ -3,25 +3,10 @@ import pandas as pd
 target = 'OHCA'
 # Read the defata
 main_df = pd.read_csv('main_hexagon_df.csv')
-# drop OHCA column
-main_df.drop(['lvl2'], axis=1, inplace=True)
-main_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-main_df.set_index('hex_id', inplace=True)
-
-# read target csv
-target_df = pd.read_csv('warszawa_osm.csv')
-target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-target_df.set_index('hex_id', inplace=True)
-
-# drop columns that are not in target_df
-target_cols = list(target_df.columns)
-for col in main_df.columns:
-    if col not in target_cols and col != target:
-        main_df.drop(col, axis=1, inplace=True)
 
 # shuffle rows
 main_df = main_df.sample(frac=1)
-
+print(main_df.head())
 # from tpot import TPOTRegressor
 # from sklearn.model_selection import train_test_split
 #
@@ -46,12 +31,12 @@ main_df = main_df.sample(frac=1)
 import h2o
 from h2o.automl import H2OAutoML
 
-h2o.init(max_mem_size='60G')
+h2o.init(max_mem_size='4G')
 h2o_df = h2o.H2OFrame(main_df)
 x = list(main_df.columns)
 y = target
 
-aml = H2OAutoML(seed=1, max_runtime_secs=21600)
+aml = H2OAutoML(seed=1, max_runtime_secs=60)
 aml.train(x=x, y=y, training_frame=h2o_df)
 
 lb = aml.leaderboard

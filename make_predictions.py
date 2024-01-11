@@ -2,38 +2,36 @@
 import h2o
 import pandas as pd
 
-target = 'predictions'
-
 # initialize h2o
 h2o.init()
 
 # load jar model
-model_path = "StackedEnsemble_AllModels_3_AutoML_1_20240110_125537"
+model_path = "StackedEnsemble_BestOfFamily_1_AutoML_1_20240111_130311"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)
 
 my_uploaded_model = h2o.upload_model(my_local_model)
 
-# load data
-data_path = "warszawa_osm.csv"
-input_data = pd.read_csv(data_path)
-# input_data.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
-# print cols
+
+target = 'OHCA'
+# Read the data
+main_df = pd.read_csv('main_hexagon_df.csv')
+# read target csv
+target_df = pd.read_csv('target.csv')
+# set index tame to hex_id
+input_data = target_df.copy()
 # make predictions
 data = h2o.H2OFrame(input_data)
 predictions = my_uploaded_model.predict(data)
 # convert to pandas
 predictions = predictions.as_data_frame()
-# add to warszawa_osm.csv and save as predictions.csv
-data = data.as_data_frame()
-data[target] = predictions
-# apply max(0, predictions) to predictions
-data[target] = data[target].apply(lambda x: max(0, x))
-# set index
-# add hex_id column from warszawa_osm.csv and make it index
-data['hex_id'] = input_data['Unnamed: 0']
-data.set_index('hex_id', inplace=True)
-# save to csv
-data.to_csv('predictions.csv')
 
+# add predictions['predict'] to target_df
+target_df['OHCA'] = predictions['predict']
+# set unnamed to hex_id and set it as the index
+target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
+target_df.set_index('hex_id', inplace=True)
+print(target_df.head())
+# save as csv
+target_df.to_csv('predictions.csv')
