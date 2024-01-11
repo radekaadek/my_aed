@@ -6,7 +6,7 @@ import pandas as pd
 h2o.init()
 
 # load jar model
-model_path = "GBM_2_AutoML_1_20240111_184347"
+model_path = "XGBoost_grid_1_AutoML_1_20240111_185033_model_60"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)
