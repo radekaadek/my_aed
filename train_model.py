@@ -46,12 +46,12 @@ main_df = main_df.sample(frac=1)
 import h2o
 from h2o.automl import H2OAutoML
 
-h2o.init()
+h2o.init(max_mem_size='60G')
 h2o_df = h2o.H2OFrame(main_df)
 x = list(main_df.columns)
 y = target
 
-aml = H2OAutoML(seed=1, max_runtime_secs=600)
+aml = H2OAutoML(seed=1, max_runtime_secs=21600)
 aml.train(x=x, y=y, training_frame=h2o_df)
 
 lb = aml.leaderboard
