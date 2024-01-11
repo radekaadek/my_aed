@@ -8,9 +8,6 @@ import pyproj
 import numpy as np
 import time
 
-logfile = 'log.txt'
-
-
 def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dict]:
     """Get point data from Overpass API in the form of a list of dictionaries:
 
@@ -78,9 +75,6 @@ def get_line_data(node_name: str, area_name: str, date: str = None) -> list[dict
         ways.append(el)
     return ways
 
-import multiprocessing as mp
-from functools import partial
-
 def process_line(line):
     hexes = set()
     for point in line['geometry']:
@@ -110,10 +104,8 @@ def get_line_df(line_data: list[dict]) -> pd.DataFrame:
 
     line_data -- list of dictionaries with line data
     """
-    # create a pool of workers
-    cpus = max(mp.cpu_count() - 2, 1)
-    with mp.Pool(cpus) as pool:
-        results = pool.map(process_line, line_data)
+    # process the data
+    results = []
 
     # merge results
     retv = {}
@@ -289,10 +281,7 @@ def get_area_df(building_df: pd.DataFrame, hexagon_res: int = 9) -> pd.DataFrame
         x, y = transformer.transform(lats, lons)
         try:
             transformed_geometry.append(shapely.geometry.Polygon(zip(x, y)))
-        except Exception as e:
-            # append to log file
-            with open(logfile, 'a') as f:
-                f.write(f"\nError: \n{e}\n")
+        except Exception as e: # life is life
             transformed_geometry.append(shapely.geometry.Polygon())
     building_df['geometry2'] = transformed_geometry
     rows_to_add = []
@@ -398,25 +387,15 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
 
 
 if __name__ == "__main__":
-    try:
-        with open(logfile, 'r') as f:
-            pass
-    except FileNotFoundError:
-        # create the file
-        with open(logfile, 'w') as f:
-            pass
-    # a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
-    # d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    # final = pd.concat([a, c, d], axis=0, ignore_index=False)
-    # # fill NaNs with 0s
-    # final = final.fillna(0)
-    # # drop row with all 0s
-    # print("Ending")
-    # final = final[(final.T != 0).any()]
-    # print("Wrtiting to file")
-    # final.to_csv('osm_data.csv')
+    a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
+    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
+    final = pd.concat([a, c, d], axis=0, ignore_index=False)
+    # fill NaNs with 0s
+    final = final.fillna(0)
+    # drop row with all 0s
+    final = final[(final.T != 0).any()]
+    final.to_csv('osm_data.csv')
     target = get_all_data("Warszawa")
     target.to_csv('warszawa_osm.csv')
-    # concatinate all csvs to a single csv
-    pass
+    # close the pool

@@ -6,7 +6,7 @@ import pandas as pd
 h2o.init()
 
 # load jar model
-model_path = "StackedEnsemble_BestOfFamily_1_AutoML_1_20240111_130311"
+model_path = "GBM_2_AutoML_1_20240111_184347"
 saved_model = h2o.load_model(model_path)
 
 my_local_model = h2o.download_model(saved_model)
@@ -22,6 +22,8 @@ target_df = pd.read_csv('target.csv')
 # set index tame to hex_id
 input_data = target_df.copy()
 # make predictions
+# drop unnamed column
+input_data.drop('Unnamed: 0', axis=1, inplace=True)
 data = h2o.H2OFrame(input_data)
 predictions = my_uploaded_model.predict(data)
 # convert to pandas

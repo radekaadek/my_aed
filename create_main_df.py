@@ -83,7 +83,7 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 # Now for the OSM data
 
 # now read virginia_beach data
-main_hexagon_df = pd.read_csv('osm_with_neighbours_save.csv')
+main_hexagon_df = pd.read_csv('osm_data_osm_neighbours.csv')
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df['OHCA'] = 0
 
@@ -96,7 +96,7 @@ for hex_id, ohca in main_ohca_df.iterrows():
 # Now for the target OSM data
 
 # read the csv file
-poland_df = pd.read_csv('warszawa_osm_neighbours.csv')
+poland_df = pd.read_csv('warszawa_osm_osm_neighbours.csv')
 
 # delete columns not in training data
 poland_cols = list(poland_df.columns)
