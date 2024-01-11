@@ -2,12 +2,12 @@
 #include <h3/h3api.h>
 #include <string>
 #include <unordered_map>
-#include <fstream>
+// #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-int main() {
+int main(int argc, char** argv) {
   // Read a csv file with the structure:
   // hex_id,bar,school,restaurant,cafe...
   // 8a2a1072b59ffff,238,42389,12,538...
@@ -15,12 +15,14 @@ int main() {
   // add _neighbor_count that sum values of neighbors
   
   std::unordered_map<H3Index, std::unordered_map<std::string, float>> hexes;
-  std::ifstream file("osm_data.csv");
-  // Check if the file was opened
-  if (!file.is_open()) {
-    std::cout << "Error opening file" << '\n';
-    return 1;
-  }
+  // std::ifstream file("osm_data.csv");
+  // // Check if the file was opened
+  // if (!file.is_open()) {
+  //   std::cout << "Error opening file" << '\n';
+  //   return 1;
+  // }
+  // read from stdin instead
+  std::istream& file = std::cin;
   std::string line;
   std::vector<std::string> columns;
   // Read the header
@@ -76,25 +78,43 @@ int main() {
       }
     }
   }
-  // create the output file
-  FILE* output_file = fopen("osm_with_neighbours.csv", "w");
-  // Write the header
-  fprintf(output_file, "hex_id");
+  // // create the output file
+  // FILE* output_file = fopen("osm_with_neighbours.csv", "w");
+  // // Write the header
+  // fprintf(output_file, "hex_id");
+  // for (auto& column : columns) {
+  //   fprintf(output_file, ",%s", column.c_str());
+  //   fprintf(output_file, ",%s", (column + "_neighbor_count").c_str());
+  // }
+  // fprintf(output_file, "\n");
+  // // Write the data
+  // for (auto& hex : hexes) {
+  //   fprintf(output_file, "%lx", hex.first);
+  //   for (auto& column : columns) {
+  //     fprintf(output_file, ",%f", hex.second[column]);
+  //     std::string col_name = column + "_neighbor_count";
+  //     fprintf(output_file, ",%f", hex.second[col_name]);
+  //   }
+  //   fprintf(output_file, "\n");
+  // }
+  // fclose(output_file);
+  //
+  // Write the data to stdout and use cout instead
+  std::cout << "hex_id";
   for (auto& column : columns) {
-    fprintf(output_file, ",%s", column.c_str());
-    fprintf(output_file, ",%s", (column + "_neighbor_count").c_str());
+    std::cout << "," << column;
+    std::cout << "," << column << "_neighbor_count";
   }
-  fprintf(output_file, "\n");
+  std::cout << "\n";
   // Write the data
   for (auto& hex : hexes) {
-    fprintf(output_file, "%lx", hex.first);
+    std::cout << std::hex << hex.first;
     for (auto& column : columns) {
-      fprintf(output_file, ",%f", hex.second[column]);
+      std::cout << "," << hex.second[column];
       std::string col_name = column + "_neighbor_count";
-      fprintf(output_file, ",%f", hex.second[col_name]);
+      std::cout << "," << hex.second[col_name];
     }
-    fprintf(output_file, "\n");
+    std::cout << "\n";
   }
-  fclose(output_file);
   return 0;
 }
