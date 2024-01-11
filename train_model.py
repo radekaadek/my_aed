@@ -33,16 +33,11 @@ if lb is not None:
     lb_df.to_csv('leaderboard.csv')
 
 # Get the best model
-# leader_model = aml.leader
+leader_model = aml.leader
 # save as binary for python
-# model_path = h2o.save_model(model=leader_model, path=".", force=True)
+model_path = h2o.save_model(model=leader_model, path=".", force=True)
 
-# save all models to a /models directory
-with open('model_paths.txt', 'w') as f:
-    for model in aml.leaderboard:
-        model_path = h2o.save_model(model=model, path="./models", force=True)
-        f.write(model_path)
-
-
+with open('model_path.txt', 'w') as f:
+    f.write(model_path)
 # Shutdown h2o
 h2o.cluster().shutdown()
