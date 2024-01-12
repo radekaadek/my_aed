@@ -366,9 +366,10 @@ def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = Tr
 
 if __name__ == "__main__":
     a = get_all_data("Montgomery County, PA", date="2018-06-01T00:00:00Z")
-    c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
+    # c = get_all_data("Cincinnati, Ohio", date="2018-06-01T00:00:00Z")
     d = get_all_data("Virginia Beach", date="2018-06-01T00:00:00Z")
-    final = pd.concat([a, c, d], axis=0, ignore_index=False)
+    # final = pd.concat([a, c, d], axis=0, ignore_index=False)
+    final = pd.concat([a, d], axis=0, ignore_index=False)
     # fill NaNs with 0s
     final = final.fillna(0)
     # drop row with all 0s

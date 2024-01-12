@@ -33,6 +33,8 @@ predictions = predictions.as_data_frame()
 
 # add predictions['predict'] to target_df
 target_df['OHCA'] = predictions['predict']
+# appyl np.maximum(0, x) to OHCA
+target_df['OHCA'] = target_df['OHCA'].apply(lambda x: max(0, x))
 # set unnamed to hex_id and set it as the index
 target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 target_df.set_index('hex_id', inplace=True)

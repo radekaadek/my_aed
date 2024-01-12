@@ -80,7 +80,7 @@ cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
 # create a dataframe from the dictionary with the hex_id as the index
 cinncinati_ohca_df = pd.DataFrame.from_dict(cincin_hex_ohca, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
-main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0)
+# main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0) # <- check this
 
 
 # Now for the OSM data
