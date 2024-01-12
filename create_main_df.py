@@ -53,9 +53,12 @@ mtgmry_ohca_df = pd.read_csv('montgomery/mtgmry_unfiltered.csv')
 # filter by 'title' containing 'CARDIAC ARREST'
 mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['title'].str.contains('CARDIAC ARREST')]
 # timeStamp contatins 2017 2018 2019
-mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['timeStamp'].str.contains('2017|2018|2019')]
+mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['timeStamp'].str.contains('2016|2017|2018|2019')]
 # create a dictionary to hold the counts of OHCA in each hex_id
 hexid_ohca_cnt = hexid_ohca(mtgmry_ohca_df, 'lat', 'lng', 9)
+# multiply all of the values by 3/4
+for hex_id in hexid_ohca_cnt:
+    hexid_ohca_cnt[hex_id] = hexid_ohca_cnt[hex_id] * 3 / 4
 mtgmry_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
 main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axis=0)
@@ -71,9 +74,12 @@ cinncinati_ohca_df['INCIDENT_TYPE_DESC'].fillna('', inplace=True)
 cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].fillna('', inplace=True)
 cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].str.contains('CARDIAC')]
 # filter CREATE_TIME_INCIDENT containing 2017 2018 2019
-cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2017|2018|2019')]
+cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2016|2017|2018|2019|2020')]
 # create a dictionary to hold the counts of OHCA in each hex_id
 cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
+# multiply all of the values by 3/5
+for hex_id in cincin_hex_ohca:
+    cincin_hex_ohca[hex_id] = cincin_hex_ohca[hex_id] * 3 / 5
 # create a dataframe from the dictionary with the hex_id as the index
 cinncinati_ohca_df = pd.DataFrame.from_dict(cincin_hex_ohca, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
