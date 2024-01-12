@@ -74,10 +74,10 @@ cinncinati_ohca_df['INCIDENT_TYPE_DESC'].fillna('', inplace=True)
 cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].fillna('', inplace=True)
 cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].str.contains('CARDIAC')]
 # filter CREATE_TIME_INCIDENT containing 2017 2018 2019
-cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2016|2017|2018|2019|2020|2021|2022|2023')]
+cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2016|2017|2018|2019|2020')]
 # create a dictionary to hold the counts of OHCA in each hex_id
 cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
-# multiply all of the values by 3/5
+# multiply by 3/5
 for hex_id in cincin_hex_ohca:
     cincin_hex_ohca[hex_id] = cincin_hex_ohca[hex_id] * 3 / 5
 # create a dataframe from the dictionary with the hex_id as the index
