@@ -1,1 +1,0 @@
-/bin/c++ -rdynamic CMakeFiles/main.dir/main.cpp.o -o bin/main  /home/CENAGIS/rdabkowski/my_aed/venv/lib/libh3.a -lm 
