@@ -1,6 +1,6 @@
 ## Respository for storing the OSM OHCA location prediction model and deployment pipeline
 
-This repository contains the code for the OSM OHCA location prediction model. The model uses [H3](https://h3geo.org/) to create a hexagonal grid over training data and uses a [H20](https://www.h2o.ai/) AutoML regressor to predict the count of OHCA incidents in provided hexagons.
+This repository contains the code for the OSM OHCA location prediction model. The model uses [H3](https://h3geo.org/) to create a hexagonal grid over training data and uses a [H2O](https://www.h2o.ai/) AutoML regressor to predict the count of OHCA incidents in provided hexagons.
 
 Preview 😊
 
