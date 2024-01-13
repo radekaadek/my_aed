@@ -81,7 +81,7 @@ main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axi
 
 # read cinncinati data
 if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
-    cinncinati_ohca_df = pd.read_csv('cincinnati/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+    cinncinati_ohca_df = pd.read_csv('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
 else:
     raise NotImplementedError('Automatically downloading the Cincinnati data is not implemented yet. Please\
                               download the data manually and place it in the data directory from:\
