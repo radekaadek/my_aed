@@ -3,21 +3,21 @@ import pandas as pd
 import requests
 import numpy as np
 import h3
-from os import listdir
+import os
 
 target = 'predictions'
 
-# check for the vbohcar.xlsx file in the current directory
-if 'VBOHCAR.xlsx' in listdir():
+# check for the vbohcar.xlsx file in the /data directory
+if 'VBOHCAR.xlsx' in os.listdir('data'):
         # read the third sheet of the excel file
-    vb_ohca_in = pd.read_excel('VBOHCAR.xlsx', sheet_name=3)
+    vb_ohca_in = pd.read_excel('./data/VBOHCAR.xlsx', sheet_name=3)
 else:
     # clone the excel file from github
     url = 'https://github.com/INFORMSJoC/2020.1022/blob/master/results/VBOHCAR.xlsx?raw=true'
     file = requests.get(url)
     file_bytes = io.BytesIO(file.content)
     # save the file to the current directory
-    with open('VBOHCAR.xlsx', 'wb') as f:
+    with open('./data/VBOHCAR.xlsx', 'wb') as f:
         f.write(file_bytes.read())
     # read the third sheet of the excel file
     vb_ohca_in = pd.read_excel(file_bytes, sheet_name=3)
@@ -51,8 +51,19 @@ hexid_ohca_cnt = hexid_ohca(vb_ohca_in, 'Latitude', 'Longitude', 9)
 # create a dataframe from the dictionary with the hex_id as the index
 main_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['OHCA'])
 
-
-mtgmry_ohca_df = pd.read_csv('montgomery/mtgmry_unfiltered.csv')
+# check if montgomery data is in the data directory
+if 'mtgmry_unfiltered.csv' in os.listdir('data'):
+    mtgmry_ohca_df = pd.read_csv('data/mtgmry_unfiltered.csv')
+else:
+    # download the montgomery data and save it to the data directory
+    url = 'https://dvn-cloud.s3.amazonaws.com/10.7910/DVN/X8Q4YA/159198dc652-749f3f65c59d.orig?response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27911.csv&response-content-type=text%2Fcsv&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240113T182722Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAIEJ3NV7UYCSRJC7A%2F20240113%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e1a7e077915752708eeaf936ed681007b64cdd46c501aba558a781e881566a2d'
+    file = requests.get(url)
+    file_bytes = io.BytesIO(file.content)
+    # save the file to the data directory
+    with open('./data/mtgmry_unfiltered.csv', 'wb') as f:
+        f.write(file_bytes.read())
+    # read the csv file
+    mtgmry_ohca_df = pd.read_csv(file_bytes)
 # filter by 'title' containing 'CARDIAC ARREST'
 mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['title'].str.contains('CARDIAC ARREST')]
 # timeStamp contatins 2017 2018 2019
@@ -68,7 +79,18 @@ main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axi
 
 
 # read cinncinati data
-cinncinati_ohca_df = pd.read_csv('cincinnati/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
+    cinncinati_ohca_df = pd.read_csv('cincinnati/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+else:
+    # download the cinncinati data and save it to the data directory
+    url = 'blob:https://data.cincinnati-oh.gov/49c82af1-f584-45b9-910e-063deda1fa02'
+    file = requests.get(url)
+    file_bytes = io.BytesIO(file.content)
+    # save the file to the data directory
+    with open('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv', 'wb') as f:
+        f.write(file_bytes.read())
+    # read the csv file
+    cinncinati_ohca_df = pd.read_csv(file_bytes)
 # remove rows with NaN values in 'LATITUDE_X' or 'LONGITUDE_X'
 cinncinati_ohca_df.dropna(subset=['LATITUDE_X', 'LONGITUDE_X'], inplace=True)
 # filter by 'INCIDENT_TYPE_DESC' containing 'CARDIAC' and STROKE (CVA) / CFD_INCIDENT_TYPE_GROUP containing 'CARDIAC'
@@ -90,7 +112,7 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 # Now for the OSM data
 
 # now read virginia_beach data
-main_hexagon_df = pd.read_csv('osm_data_osm_neighbours.csv')
+main_hexagon_df = pd.read_csv('./data/osm_data_osm_neighbours.csv')
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df['OHCA'] = 0
 
@@ -103,7 +125,7 @@ for hex_id, ohca in main_ohca_df.iterrows():
 # Now for the target OSM data
 
 # read the csv file
-poland_df = pd.read_csv('warszawa_osm_osm_neighbours.csv')
+poland_df = pd.read_csv('./data/warszawa_osm_osm_neighbours.csv')
 
 # delete columns not in training data
 poland_cols = list(poland_df.columns)
@@ -123,7 +145,7 @@ main_hexagon_df.fillna(0, inplace=True)
 main_hexagon_df = main_hexagon_df[(main_hexagon_df.T != 0).any()]
 # save as main_hexagon_df.csv
 poland_df.drop(['hex_id'], axis=1, inplace=True)
-poland_df.to_csv('target.csv')
+poland_df.to_csv('./data/target.csv')
 main_hexagon_df.drop(['hex_id'], axis=1, inplace=True)
-main_hexagon_df.to_csv('main_hexagon_df.csv')
+main_hexagon_df.to_csv('./data/main_hexagon_df.csv')
 

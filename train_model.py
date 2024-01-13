@@ -1,10 +1,11 @@
 import pandas as pd
 import h2o
 from h2o.automl import H2OAutoML
+import os
 
 target = 'OHCA'
 # Read the defata
-main_df = pd.read_csv('main_hexagon_df.csv')
+main_df = pd.read_csv('./data/main_hexagon_df.csv')
 
 print(main_df.head())
 
@@ -34,11 +35,14 @@ if lb is not None:
 
 # Get the best model
 leader_model = aml.leader
+# check if the /models directory exists
+if not os.path.exists('./models'):
+    os.mkdir('./models')
 # save as binary for python
-model_path = h2o.save_model(model=leader_model, path=".", force=True)
+model_path = h2o.save_model(model=leader_model, path="./models", force=True)
 
 with open('model_path.txt', 'w') as f:
     # write stuff after the las /
-    f.write(model_path.split('/')[-1])
+    f.write('./models/' + model_path.split('/')[-1])
 # Shutdown h2o
 h2o.cluster().shutdown()

@@ -40,4 +40,4 @@ target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 target_df.set_index('hex_id', inplace=True)
 print(target_df.head())
 # save as csv
-target_df.to_csv('predictions.csv')
+target_df.to_csv('./data/predictions.csv')
