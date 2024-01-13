@@ -1,12 +1,6 @@
 # data is big :O
 cache/
-mtgmry_unfiltered.csv
-apikey.txt
-Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv
-Emergency_Medical_Service__EMS__Incidents_20240107.csv
-osm_with_neighbours_save.csv
-warszawa_osm.csv
-data/*
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -168,3 +162,36 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
