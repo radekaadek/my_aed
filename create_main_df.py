@@ -51,6 +51,7 @@ hexid_ohca_cnt = hexid_ohca(vb_ohca_in, 'Latitude', 'Longitude', 9)
 # create a dataframe from the dictionary with the hex_id as the index
 main_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['OHCA'])
 
+file_path = './data/mtgmry_unfiltered.csv'
 # check if montgomery data is in the data directory
 if 'mtgmry_unfiltered.csv' in os.listdir('data'):
     mtgmry_ohca_df = pd.read_csv('data/mtgmry_unfiltered.csv')
@@ -60,10 +61,10 @@ else:
     file = requests.get(url)
     file_bytes = io.BytesIO(file.content)
     # save the file to the data directory
-    with open('./data/mtgmry_unfiltered.csv', 'wb') as f:
+    with open(file_path, 'wb') as f:
         f.write(file_bytes.read())
     # read the csv file
-    mtgmry_ohca_df = pd.read_csv(file_bytes)
+    mtgmry_ohca_df = pd.read_csv(file_path)
 # filter by 'title' containing 'CARDIAC ARREST'
 mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['title'].str.contains('CARDIAC ARREST')]
 # timeStamp contatins 2017 2018 2019
@@ -82,15 +83,9 @@ main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axi
 if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
     cinncinati_ohca_df = pd.read_csv('cincinnati/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
 else:
-    # download the cinncinati data and save it to the data directory
-    url = 'blob:https://data.cincinnati-oh.gov/49c82af1-f584-45b9-910e-063deda1fa02'
-    file = requests.get(url)
-    file_bytes = io.BytesIO(file.content)
-    # save the file to the data directory
-    with open('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv', 'wb') as f:
-        f.write(file_bytes.read())
-    # read the csv file
-    cinncinati_ohca_df = pd.read_csv(file_bytes)
+    raise NotImplementedError('Automatically downloading the Cincinnati data is not implemented yet. Please\
+                              download the data manually and place it in the data directory from:\
+                              https://data.cincinnati-oh.gov/Safety/Cincinnati-Fire-Incidents-CAD-including-EMS-ALS-BL/vnsz-a3wp/data')
 # remove rows with NaN values in 'LATITUDE_X' or 'LONGITUDE_X'
 cinncinati_ohca_df.dropna(subset=['LATITUDE_X', 'LONGITUDE_X'], inplace=True)
 # filter by 'INCIDENT_TYPE_DESC' containing 'CARDIAC' and STROKE (CVA) / CFD_INCIDENT_TYPE_GROUP containing 'CARDIAC'

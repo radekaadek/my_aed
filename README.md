@@ -68,4 +68,5 @@ We would like to send special thanks to people and organizations that have share
 ## Authors
 
 - [Radosław Dąbkowski](https://github.com/radekaadek)
+- [Michał Ambroży]()
 - [Koło Naukowe Geoinformatyki]((https://github.com/KN-GI))
