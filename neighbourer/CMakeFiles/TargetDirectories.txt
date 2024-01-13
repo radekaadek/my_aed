@@ -1,0 +1,3 @@
+/home/CENAGIS/rdabkowski/my_aed/neighbourer/CMakeFiles/main.dir
+/home/CENAGIS/rdabkowski/my_aed/neighbourer/CMakeFiles/edit_cache.dir
+/home/CENAGIS/rdabkowski/my_aed/neighbourer/CMakeFiles/rebuild_cache.dir
