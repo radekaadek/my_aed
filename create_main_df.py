@@ -16,6 +16,9 @@ else:
     url = 'https://github.com/INFORMSJoC/2020.1022/blob/master/results/VBOHCAR.xlsx?raw=true'
     file = requests.get(url)
     file_bytes = io.BytesIO(file.content)
+    # save the file to the current directory
+    with open('VBOHCAR.xlsx', 'wb') as f:
+        f.write(file_bytes.read())
     # read the third sheet of the excel file
     vb_ohca_in = pd.read_excel(file_bytes, sheet_name=3)
 
@@ -74,13 +77,17 @@ cinncinati_ohca_df['INCIDENT_TYPE_DESC'].fillna('', inplace=True)
 cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].fillna('', inplace=True)
 cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CFD_INCIDENT_TYPE_GROUP'].str.contains('CARDIAC')]
 # filter CREATE_TIME_INCIDENT containing 2017 2018 2019
-cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2017|2018|2019')]
+cinncinati_ohca_df = cinncinati_ohca_df[cinncinati_ohca_df['CREATE_TIME_INCIDENT'].str.contains('2016|2017|2018|2019|2020')]
 # create a dictionary to hold the counts of OHCA in each hex_id
 cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
+# multiply by 3/5
+for hex_id in cincin_hex_ohca:
+    cincin_hex_ohca[hex_id] = cincin_hex_ohca[hex_id] * 3 / 5
 # create a dataframe from the dictionary with the hex_id as the index
 cinncinati_ohca_df = pd.DataFrame.from_dict(cincin_hex_ohca, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
-# main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0) # <- check this
+print(len(cinncinati_ohca_df))
+main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0) # <- check this
 
 
 # Now for the OSM data
