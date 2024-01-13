@@ -105,6 +105,14 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 
 
 # Now for the OSM data
+# add neighbours to dfs
+# check if the executable exists
+# cmake the neighbourer
+os.system('cmake ./neighbourer')
+# make the neighbourer
+os.system('make ./neighbourer')
+os.system('./neighbourer/bin/main < ./data/osm_data.csv > ./data/osm_data_osm_neighbours.csv')
+os.system('./neighbourer/bin/main < ./data/warszawa_osm.csv > ./data/warszawa_osm_osm_neighbours.csv')
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('./data/osm_data_osm_neighbours.csv')
