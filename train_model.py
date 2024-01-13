@@ -21,7 +21,7 @@ y = target
 # Exclude this
 excluded_algos = ["StackedEnsemble"]
 
-aml = H2OAutoML(seed=1, max_runtime_secs=600, exclude_algos=excluded_algos)
+aml = H2OAutoML(seed=1, max_runtime_secs=3600, exclude_algos=excluded_algos)
 aml.train(x=x, y=y, training_frame=h2o_df)
 
 lb = aml.leaderboard
