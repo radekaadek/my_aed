@@ -26,29 +26,19 @@ pip install -r requirements.txt
 
 The deployment goes through the following steps:
 
-1. [aquire_data.py](./aquire_data.py) - Downloads and saves case data as two files - `osm_data.csv` with data about the terrain features and `warszawa_osm.csv` into the [data](./data) directory
-- [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) for Data about terrain features
-- [VBOHCA](https://github.com/janielecustodio/VBOHCA) - Spatiotemporal Data Set for Out-of-Hospital Cardiac Arrests
+1. [aquire_data.py](./aquire_data.py) - Downloads and saves case data as two files - `osm_data.csv` with data about the terrain features and `warszawa_osm.csv` into the [data](./data) directory from:
+- The [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) for Data about terrain features
+- [VBOHCA](https://github.com/janielecustodio/VBOHCA) - Spatiotemporal Data Set for Out-of-Hospital Cardiac Arrests in Virginia Beach
 - [Cincinnati Fire Incidents (CAD) (including EMS: ALS/BLS)](https://data.cincinnati-oh.gov/Safety/Cincinnati-Fire-Incidents-CAD-including-EMS-ALS-BL/vnsz-a3wp/data)
-- [](https://data.montgomerycountymd.gov/Public-Safety/Police-Dispatched-Incidents/98cc-bc7d/about_data)
+- [Police Dispatched Incidents, Montgomery County, MD](https://data.montgomerycountymd.gov/Public-Safety/Police-Dispatched-Incidents/98cc-bc7d/about_data)
 
-2. Neighbourer - builds the neighbourer, a program that given a file on stdin sums values of neighbours for every hexagon and prints the result to stdout. The program is written in C++ and uses the H3 library.
-```bash
-cd neighbourer
-cmake CMakeLists.txt
-make
-cd ..
-./neighbourer/bin < data/osm_data.csv > data/osm_data_neighbours.csv
-./neighbourer/bin < data/warszawa_osm.csv > data/warszawa_osm_neighbours.csv
-```
+2. [create_main_df.py](./create_main_df.py) - Creates two dataframes, one for training and one for testing, and saves them into the [data](./data) directory, their names are `main_hexagon_df.csv` and `target.csv`. It also uses the neighbourer - a program that sums values of neighbours for every hexagon and adds appropriate columns. The program is written in C++ and uses the H3 library.
 
-3. [create_main_df.py](./create_main_df.py) - Creates two dataframes, one for training and one for testing, and saves them into the [data](./data) directory, their names are `main_hexagon_df.csv` and `target.csv`
+3. [train_model.py](./train_model.py) - Trains the model and saves it into the [models](./models) directory
 
-4. [train_model.py](./train_model.py) - Trains the model and saves it into the [models](./models) directory
+4. [predict.py](./predict.py) - Uses the `target.csv` file to predict the count of OHCA incidents in each hexagon and saves the result into the [data](./data) directory as `predictions.csv`
 
-5. [predict.py](./predict.py) - Uses the `target.csv` file to predict the count of OHCA incidents in each hexagon and saves the result into the [data](./data) directory as `predictions.csv`
-
-6. [visual.py](./visual.py) - Creates a map of the predictions and saves it into the [data](./data) directory as `map.html`
+5. [visual.py](./visual.py) - Creates a map of the predictions and saves it into the [data](./data) directory as `map.html`
 
 ## Performance
 
