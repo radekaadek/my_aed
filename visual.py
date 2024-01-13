@@ -5,7 +5,7 @@ import pandas as pd
 import h3
 
 target = 'OHCA'
-poland_df = pd.read_csv('predictions.csv')
+poland_df = pd.read_csv('./data/predictions.csv')
 # delete the first row
 # print the last 5 rows
 print(poland_df.tail())
@@ -69,4 +69,4 @@ for _, row in poland_df.iterrows():
             fill_opacity=fill_value,
             popup='Predicted OHCA: {}'.format(row[target])
         ).add_to(m)
-m.save('warsaw.html')
+m.save('map.html')

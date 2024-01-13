@@ -18,9 +18,9 @@ my_uploaded_model = h2o.upload_model(my_local_model)
 
 target = 'OHCA'
 # Read the data
-main_df = pd.read_csv('main_hexagon_df.csv')
+main_df = pd.read_csv('./data/main_hexagon_df.csv')
 # read target csv
-target_df = pd.read_csv('target.csv')
+target_df = pd.read_csv('./data/target.csv')
 # set index tame to hex_id
 input_data = target_df.copy()
 # make predictions
