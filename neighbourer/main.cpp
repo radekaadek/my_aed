@@ -1,13 +1,11 @@
-#include <cstdio>
 #include <h3/h3api.h>
 #include <string>
 #include <unordered_map>
-// #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-int main(int argc, char** argv) {
+int main() {
   // Read a csv file with the structure:
   // hex_id,bar,school,restaurant,cafe...
   // 8a2a1072b59ffff,238,42389,12,538...
@@ -15,26 +13,25 @@ int main(int argc, char** argv) {
   // add _neighbor_count that sum values of neighbors
   
   std::unordered_map<H3Index, std::unordered_map<std::string, float>> hexes;
-  // std::ifstream file("osm_data.csv");
-  // // Check if the file was opened
-  // if (!file.is_open()) {
-  //   std::cout << "Error opening file" << '\n';
-  //   return 1;
-  // }
-  // read from stdin instead
   std::istream& file = std::cin;
   std::string line;
   std::vector<std::string> columns;
-  // Read the header
+  // read the first line and get the columns
   std::getline(file, line);
-  // split it by commas
+  // split it by commas and add the columns to the vector
   std::istringstream iss(line);
-  // read the first token which is the hex_id
-  std::getline(iss, line, ',');
-  for (std::string token; std::getline(iss, token, ',');) {
-    // Add the header to the hexes
-    hexes[H3Index()].emplace(token, 0);
+  std::string token;
+  // skip the first column
+  std::getline(iss, token, ',');
+  // Get the columns
+  while (std::getline(iss, token, ',')) {
     columns.push_back(token);
+  }
+  if (columns.size() > 4) {
+    columns.pop_back(); // last columns brake it for some reason
+    columns.pop_back();
+    columns.pop_back();
+    columns.pop_back();
   }
 
   // Read the rest of the file setting the values to the hexes
@@ -57,13 +54,12 @@ int main(int argc, char** argv) {
   for (auto& hex : hexes) {
     hex_ids.push_back(hex.first);
   }
-  size_t saved_hexes = hex_ids.size();
 
   // Iterate over the hexes, find the neighbors and sum the values
   H3Index neighbors[7];
+  #pragma omp parallel for private(neighbors)
   for (const auto& hex : hex_ids) {
-    // H3Error error = gridDisk(H3Index origin, int k, H3Index *out)
-    H3Error error = gridDisk(hex, 1, neighbors); // assume no error ;)
+    gridDisk(hex, 1, neighbors); // assume no error ;)
     // Iterate over the neighbors
     for (auto& neighbor : neighbors) {
       // check if the neighbor is the same as the hex and if it is in the map
@@ -72,38 +68,17 @@ int main(int argc, char** argv) {
       }
       // Iterate over the columns
       for (auto& column : columns) {
-        std::string col_name = column + "_neighbor_count";
+        std::string col_name = column + "_neighbor_sum";
         // only add the neighbor to existing hexes
+        #pragma omp atomic
         hexes[hex][col_name] += hexes[neighbor][column];
       }
     }
   }
-  // // create the output file
-  // FILE* output_file = fopen("osm_with_neighbours.csv", "w");
-  // // Write the header
-  // fprintf(output_file, "hex_id");
-  // for (auto& column : columns) {
-  //   fprintf(output_file, ",%s", column.c_str());
-  //   fprintf(output_file, ",%s", (column + "_neighbor_count").c_str());
-  // }
-  // fprintf(output_file, "\n");
-  // // Write the data
-  // for (auto& hex : hexes) {
-  //   fprintf(output_file, "%lx", hex.first);
-  //   for (auto& column : columns) {
-  //     fprintf(output_file, ",%f", hex.second[column]);
-  //     std::string col_name = column + "_neighbor_count";
-  //     fprintf(output_file, ",%f", hex.second[col_name]);
-  //   }
-  //   fprintf(output_file, "\n");
-  // }
-  // fclose(output_file);
-  //
-  // Write the data to stdout and use cout instead
   std::cout << "hex_id";
   for (auto& column : columns) {
     std::cout << "," << column;
-    std::cout << "," << column << "_neighbor_count";
+    std::cout << "," << column << "_neighbor_sum";
   }
   std::cout << "\n";
   // Write the data
@@ -111,7 +86,7 @@ int main(int argc, char** argv) {
     std::cout << std::hex << hex.first;
     for (auto& column : columns) {
       std::cout << "," << hex.second[column];
-      std::string col_name = column + "_neighbor_count";
+      std::string col_name = column + "_neighbor_sum";
       std::cout << "," << hex.second[col_name];
     }
     std::cout << "\n";

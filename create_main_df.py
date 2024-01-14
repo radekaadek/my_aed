@@ -116,6 +116,9 @@ os.system('./neighbourer/bin/main < ./data/warszawa_osm.csv > ./data/warszawa_os
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('./data/osm_data_osm_neighbours.csv')
+print(main_hexagon_df.head())
+# print the sums of the first 10 columns
+print(main_hexagon_df.iloc[:, 0:10].sum())
 # pivot the dataframe to have the hex_id as the index
 main_hexagon_df['OHCA'] = 0
 
@@ -130,16 +133,16 @@ for hex_id, ohca in main_ohca_df.iterrows():
 # read the csv file
 poland_df = pd.read_csv('./data/warszawa_osm_osm_neighbours.csv')
 
-# delete columns not in training data
-poland_cols = list(poland_df.columns)
-main_cols = list(main_hexagon_df.columns)
-for col in poland_cols:
-    if col not in main_cols:
-        del poland_df[col]
-# drop columns in main_hexagon_df that are not in poland_df
-for col in main_cols:
-    if col not in poland_cols and col != 'OHCA':
-        del main_hexagon_df[col]
+# # delete columns not in training data
+# poland_cols = list(poland_df.columns)
+# main_cols = list(main_hexagon_df.columns)
+# for col in poland_cols:
+#     if col not in main_cols:
+#         del poland_df[col]
+# # drop columns in main_hexagon_df that are not in poland_df
+# for col in main_cols:
+#     if col not in poland_cols and col != 'OHCA':
+#         del main_hexagon_df[col]
 
 # fill NaN values with 0
 main_hexagon_df.fillna(0, inplace=True)

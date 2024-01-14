@@ -18,7 +18,7 @@ For building neighbourer, the program that adds neighbour data to hexagons, you 
 
 ## Running the deployment pipeline
 
-1. Install python dependencies:
+Install python dependencies:
 
 ```bash
 pip install -r requirements.txt
