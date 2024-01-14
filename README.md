@@ -42,7 +42,7 @@ The deployment goes through the following steps:
 
 ## Performance
 
-The best model ***currently*** achieves a root mean squared error of 1.47 on predicting the number of ohca cases in a hexagon across 3 years on the whole dataset.
+The best model ***currently*** achieves a root mean squared error of 0.91 on predicting the number of ohca cases in a hexagon across 3 years on the whole dataset.
 
 ## Special thanks
 
