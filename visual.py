@@ -69,4 +69,4 @@ for _, row in poland_df.iterrows():
             fill_opacity=fill_value,
             popup='Predicted OHCA: {}'.format(row[target])
         ).add_to(m)
-m.save('map.html')
+m.save('index.html')
