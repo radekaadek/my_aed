@@ -4,6 +4,12 @@ This repository contains the code for the OSM OHCA location prediction model. Th
 
 [Preview](https://radekaadek.github.io/my_aed/) 😊
 
+- Green hexagons - hexagons with an AED or a hospital inside
+- Blue hexagons - top 10 hexagons with the highest predicted number of OHCA incidents withouth an AED
+- Red hexagons - other hexagons without an AED
+
+All hexagons have an opacity set to the predicted number of OHCA incidents in the hexagon.
+
 ![Warsaw photo](./warsaw_photo.png)
 
 ## Prerequisites for running the deployment pipeline
