@@ -139,16 +139,16 @@ poland_df = pd.read_csv('./data/warszawa_osm_osm_neighbours.csv')
 # drop the unnamed columns
 poland_df.drop(columns=['Unnamed: 0'], inplace=True)
 
-# # delete columns not in training data
-# poland_cols = list(poland_df.columns)
-# main_cols = list(main_hexagon_df.columns)
-# for col in poland_cols:
-#     if col not in main_cols:
-#         del poland_df[col]
-# # drop columns in main_hexagon_df that are not in poland_df
-# for col in main_cols:
-#     if col not in poland_cols and col != 'OHCA':
-#         del main_hexagon_df[col]
+# delete columns not in training data
+poland_cols = list(poland_df.columns)
+main_cols = list(main_hexagon_df.columns)
+for col in poland_cols:
+    if col not in main_cols:
+        del poland_df[col]
+# drop columns in main_hexagon_df that are not in poland_df
+for col in main_cols:
+    if col not in poland_cols and col != 'OHCA':
+        del main_hexagon_df[col]
 
 # fill NaN values with 0
 main_hexagon_df.fillna(0, inplace=True)
