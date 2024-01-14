@@ -115,18 +115,16 @@ os.system('./neighbourer/bin/main < ./data/warszawa_osm.csv > ./data/warszawa_os
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('./data/osm_data_osm_neighbours.csv')
+# drop the unnamed columns
+main_hexagon_df.drop(columns=['Unnamed: 0'], inplace=True)
 # rename the columns by shifting them to the left
-cols = list(main_hexagon_df.columns)
-cols = cols[1:] + [cols[-1] + '_last']
-main_hexagon_df.columns = cols
 # print columns that sum to 0
-print(main_hexagon_df.columns[main_hexagon_df.sum() == 0])
 print(list(main_hexagon_df.columns))
 print(main_hexagon_df.head())
 # print the sums of the first 10 columns
 print(main_hexagon_df.iloc[:, 0:10].sum())
 # pivot the dataframe to have the hex_id as the index
-main_hexagon_df['OHCA'] = 0
+main_hexagon_df['OHCA'] = np.float32(0)
 
 # add the OHCA counts to the main DataFrame
 for hex_id, ohca in main_ohca_df.iterrows():
@@ -138,6 +136,8 @@ for hex_id, ohca in main_ohca_df.iterrows():
 
 # read the csv file
 poland_df = pd.read_csv('./data/warszawa_osm_osm_neighbours.csv')
+# drop the unnamed columns
+poland_df.drop(columns=['Unnamed: 0'], inplace=True)
 
 # # delete columns not in training data
 # poland_cols = list(poland_df.columns)
@@ -156,8 +156,6 @@ main_hexagon_df.fillna(0, inplace=True)
 # delete rows with all columns equal to 0
 main_hexagon_df = main_hexagon_df[(main_hexagon_df.T != 0).any()]
 # save as main_hexagon_df.csv
-poland_df.drop(['hex_id'], axis=1, inplace=True)
 poland_df.to_csv('./data/target.csv')
-main_hexagon_df.drop(['hex_id'], axis=1, inplace=True)
 main_hexagon_df.to_csv('./data/main_hexagon_df.csv')
 

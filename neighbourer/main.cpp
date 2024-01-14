@@ -69,7 +69,6 @@ int main() {
     }
   }
 
-  std::cout << "hex_id";
   for (const auto& header : headers) {
     std::cout << "," << header << "," << header << "_neighbour_count";
   }
