@@ -1,1 +1,1 @@
-/usr/bin/c++  -fopenmp -rdynamic CMakeFiles/main.dir/main.cpp.o -o bin/main  /home/radekaadek/my_aed/venv/lib/libh3.a -lm -lgomp -Wl,-Bstatic -lpthread -Wl,-Bdynamic 
+/bin/c++  -fopenmp -rdynamic CMakeFiles/main.dir/main.cpp.o -o bin/main  /home/CENAGIS/rdabkowski/my_aed/venv/lib/libh3.a -lm -lgomp -lpthread 
