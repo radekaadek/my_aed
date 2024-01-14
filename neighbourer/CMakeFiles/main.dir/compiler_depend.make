@@ -3,7 +3,7 @@
 
 CMakeFiles/main.dir/main.cpp.o: main.cpp \
   /usr/include/stdc-predef.h \
-  /usr/local/include/h3/h3api.h \
+  /home/radekaadek/my_aed/venv/include/h3/h3api.h \
   /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h \
   /usr/include/stdint.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -194,20 +194,17 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
   /usr/include/c++/12/bits/ostream.tcc \
   /usr/include/c++/12/istream \
   /usr/include/c++/12/bits/istream.tcc \
-  /usr/include/c++/12/sstream \
-  /usr/include/c++/12/bits/sstream.tcc \
   /usr/include/c++/12/vector \
   /usr/include/c++/12/bits/stl_uninitialized.h \
   /usr/include/c++/12/bits/stl_vector.h \
   /usr/include/c++/12/bits/stl_bvector.h \
-  /usr/include/c++/12/bits/vector.tcc
+  /usr/include/c++/12/bits/vector.tcc \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/omp.h
 
 
 /usr/include/c++/12/bits/stl_bvector.h:
 
 /usr/include/c++/12/bits/stl_vector.h:
-
-/usr/include/c++/12/sstream:
 
 /usr/include/c++/12/bits/basic_ios.tcc:
 
@@ -393,11 +390,11 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
-/usr/include/c++/12/bits/sstream.tcc:
-
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
 /usr/include/c++/12/cstdlib:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/omp.h:
 
 /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
 
@@ -429,6 +426,8 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
 
+/usr/include/features.h:
+
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
 
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
@@ -447,6 +446,8 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
+/home/radekaadek/my_aed/venv/include/h3/h3api.h:
+
 /usr/include/c++/12/bits/stringfwd.h:
 
 /usr/include/x86_64-linux-gnu/sys/select.h:
@@ -459,11 +460,9 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
 
 /usr/include/c++/12/bits/allocator.h:
 
-/usr/include/features.h:
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
 
 /usr/include/c++/12/bits/cpp_type_traits.h:
-
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h:
 
@@ -486,8 +485,6 @@ CMakeFiles/main.dir/main.cpp.o: main.cpp \
 /usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
-
-/usr/local/include/h3/h3api.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
 

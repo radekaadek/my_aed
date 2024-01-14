@@ -2,94 +2,86 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
-#include <sstream>
 #include <vector>
+#include <omp.h>
 
 int main() {
-  // Read a csv file with the structure:
+  // Read a csv file from stdin with structure:
   // hex_id,bar,school,restaurant,cafe...
   // 8a2a1072b59ffff,238,42389,12,538...
   // 8a2a1072b5bffff,432,0,23,482...
-  // add _neighbor_count that sum values of neighbors
+  // add _neighbour_count that sum values of neighbours
   
+  std::vector<std::string> headers;
   std::unordered_map<H3Index, std::unordered_map<std::string, float>> hexes;
-  std::istream& file = std::cin;
   std::string line;
-  std::vector<std::string> columns;
-  // read the first line and get the columns
-  std::getline(file, line);
-  // split it by commas and add the columns to the vector
-  std::istringstream iss(line);
+  std::getline(std::cin, line);
+  // split by comma
+  std::string delimiter = ",";
+  size_t pos = 0;
   std::string token;
-  // skip the first column
-  std::getline(iss, token, ',');
-  // Get the columns
-  while (std::getline(iss, token, ',')) {
-    columns.push_back(token);
+  // skip the hex_id
+  token = line.substr(0, line.find(delimiter));
+  line.erase(0, line.find(delimiter) + delimiter.length());
+  // get the headers
+  while ((pos = line.find(delimiter)) != std::string::npos) {
+    token = line.substr(0, pos);
+    headers.push_back(token);
+    line.erase(0, pos + delimiter.length());
   }
-  if (columns.size() > 4) {
-    columns.pop_back(); // last columns brake it for some reason
-    columns.pop_back();
-    columns.pop_back();
-    columns.pop_back();
+  headers.push_back(line);
+
+  // read the data
+  while (std::getline(std::cin, line)) {
+    // get the hex_id
+    token = line.substr(0, line.find(delimiter));
+    H3Index hex_id = std::stoull(token, nullptr, 16);
+    line.erase(0, line.find(delimiter) + delimiter.length());
+    // get the values
+    std::unordered_map<std::string, float> values;
+    while ((pos = line.find(delimiter)) != std::string::npos) {
+      token = line.substr(0, pos);
+      values[headers[values.size()]] = std::stof(token);
+      line.erase(0, pos + delimiter.length());
+    }
+    values[headers[values.size()]] = std::stof(line);
+    hexes[hex_id] = values;
   }
 
-  // Read the rest of the file setting the values to the hexes
-  while (std::getline(file, line)) {
-    // split it by commas
-    std::istringstream iss(line);
-    std::string token;
-    // Get the hex id
-    std::getline(iss, token, ',');
-    H3Index hex_id = H3Index(std::stoull(token, nullptr, 16));
-    // Iterate over the columns
-    for (auto& column : columns) {
-      // Get the value
-      std::getline(iss, token, ',');
-      // Add the value to the hex
-      hexes[hex_id][column] = std::stof(token);
+  // add neighbour sums
+  #pragma omp parallel for
+  for (size_t i = 0; i < hexes.size(); i++) {
+    auto hex = hexes.begin();
+    std::advance(hex, i);
+    for (const auto& header : headers) {
+      H3Index neighbors[7]; // 6 neighbors + self
+      gridDisk(hex->first, 1, neighbors);
+      float sum = 0;
+      #pragma omp parallel for reduction(+:sum)
+      for (int j = 0; j < 7; j++) {
+        // check if neighbour is in the map
+        if (hexes.find(neighbors[j]) != hexes.end() and neighbors[j] != hex->first) {
+          sum += hexes[neighbors[j]][header];
+        }
+      }
+      std::string neighbor_name = header + "_neighbour_count";
+      hexes[hex->first][neighbor_name] = sum;
     }
-  }
-  std::vector<H3Index> hex_ids;
-  for (auto& hex : hexes) {
-    hex_ids.push_back(hex.first);
   }
 
-  // Iterate over the hexes, find the neighbors and sum the values
-  H3Index neighbors[7];
-  #pragma omp parallel for private(neighbors)
-  for (const auto& hex : hex_ids) {
-    gridDisk(hex, 1, neighbors); // assume no error ;)
-    // Iterate over the neighbors
-    for (auto& neighbor : neighbors) {
-      // check if the neighbor is the same as the hex and if it is in the map
-      if (neighbor == hex or hexes.find(neighbor) == hexes.end()) {
-        continue;
-      }
-      // Iterate over the columns
-      for (auto& column : columns) {
-        std::string col_name = column + "_neighbor_sum";
-        // only add the neighbor to existing hexes
-        #pragma omp atomic
-        hexes[hex][col_name] += hexes[neighbor][column];
-      }
-    }
-  }
   std::cout << "hex_id";
-  for (auto& column : columns) {
-    std::cout << "," << column;
-    std::cout << "," << column << "_neighbor_sum";
+  for (const auto& header : headers) {
+    std::cout << "," << header << "," << header << "_neighbour_count";
   }
-  std::cout << "\n";
-  // Write the data
-  for (auto& hex : hexes) {
+  std::cout << '\n';
+  for (const auto& hex : hexes) {
     std::cout << std::hex << hex.first;
-    for (auto& column : columns) {
-      std::cout << "," << hex.second[column];
-      std::string col_name = column + "_neighbor_sum";
-      std::cout << "," << hex.second[col_name];
+    for (const auto& header : headers) {
+      std::cout << "," << hexes[hex.first][header];
+      std::cout << "," << hexes[hex.first][header + "_neighbour_count"];
     }
-    std::cout << "\n";
+    std::cout << '\n';
   }
+
   return 0;
 }

@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DH3_PREFIX=""
 
-CXX_INCLUDES = 
+CXX_INCLUDES = -isystem /home/radekaadek/my_aed/venv/include
 
 CXX_FLAGS =  -fopenmp -Wall -Wextra -pedantic -O4 -fopenmp -std=gnu++11
 

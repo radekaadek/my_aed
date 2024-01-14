@@ -231,7 +231,7 @@ OpenMP_gomp_LIBRARY:FILEPATH=/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so
 OpenMP_pthread_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.a
 
 //The directory containing a CMake configuration file for h3.
-h3_DIR:PATH=/usr/local/lib/cmake/h3
+h3_DIR:PATH=/home/radekaadek/my_aed/venv/lib/cmake/h3
 
 //Value Computed by CMake
 h3examples_BINARY_DIR:STATIC=/home/radekaadek/my_aed/neighbourer

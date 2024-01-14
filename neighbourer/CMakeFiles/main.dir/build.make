@@ -92,8 +92,8 @@ main_EXTERNAL_OBJECTS =
 
 bin/main: CMakeFiles/main.dir/main.cpp.o
 bin/main: CMakeFiles/main.dir/build.make
-bin/main: /usr/local/lib/libh3.a
-bin/main: /usr/lib/x86_64-linux-gnu/libm.so
+bin/main: /home/radekaadek/my_aed/venv/lib/libh3.a
+bin/main: /usr/lib64/libm.so
 bin/main: /usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so
 bin/main: /usr/lib/x86_64-linux-gnu/libpthread.a
 bin/main: CMakeFiles/main.dir/link.txt

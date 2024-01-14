@@ -100,7 +100,6 @@ cincin_hex_ohca = hexid_ohca(cinncinati_ohca_df, 'LATITUDE_X', 'LONGITUDE_X', 9)
 # create a dataframe from the dictionary with the hex_id as the index
 cinncinati_ohca_df = pd.DataFrame.from_dict(cincin_hex_ohca, orient='index', columns=['OHCA'])
 # add the OHCA count to the main dataframe
-print(len(cinncinati_ohca_df))
 main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False, axis=0) # <- check this
 
 
@@ -110,12 +109,19 @@ main_ohca_df = pd.concat([main_ohca_df, cinncinati_ohca_df], ignore_index=False,
 # cmake the neighbourer
 os.system('cmake ./neighbourer')
 # make the neighbourer
-os.system('make ./neighbourer')
+os.system('cd ./neighbourer && make')
 os.system('./neighbourer/bin/main < ./data/osm_data.csv > ./data/osm_data_osm_neighbours.csv')
 os.system('./neighbourer/bin/main < ./data/warszawa_osm.csv > ./data/warszawa_osm_osm_neighbours.csv')
 
 # now read virginia_beach data
 main_hexagon_df = pd.read_csv('./data/osm_data_osm_neighbours.csv')
+# rename the columns by shifting them to the left
+cols = list(main_hexagon_df.columns)
+cols = cols[1:] + [cols[-1] + '_last']
+main_hexagon_df.columns = cols
+# print columns that sum to 0
+print(main_hexagon_df.columns[main_hexagon_df.sum() == 0])
+print(list(main_hexagon_df.columns))
 print(main_hexagon_df.head())
 # print the sums of the first 10 columns
 print(main_hexagon_df.iloc[:, 0:10].sum())

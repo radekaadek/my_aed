@@ -377,19 +377,9 @@ if __name__ == "__main__":
     final = final.fillna(0)
     # drop row with all 0s
     final = final[(final.T != 0).any()]
-    # add 4 dummy columns with 0s because neighbourer brakes
-    final['dummy1'] = 0
-    final['dummy2'] = 0
-    final['dummy3'] = 0
-    final['dummy4'] = 0
     final.to_csv('./data/osm_data.csv')
     target = get_all_data("Warszawa")
     target = target.fillna(0)
     target = target[(target.T != 0).any()]
-    target['dummy1'] = 0
-    target['dummy2'] = 0
-    target['dummy3'] = 0
-    target['dummy4'] = 0
-
     target.to_csv('./data/warszawa_osm.csv')
 

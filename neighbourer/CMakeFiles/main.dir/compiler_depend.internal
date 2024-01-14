@@ -4,7 +4,7 @@
 CMakeFiles/main.dir/main.cpp.o
  /home/radekaadek/my_aed/neighbourer/main.cpp
  /usr/include/stdc-predef.h
- /usr/local/include/h3/h3api.h
+ /home/radekaadek/my_aed/venv/include/h3/h3api.h
  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h
  /usr/include/stdint.h
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h
@@ -195,11 +195,10 @@ CMakeFiles/main.dir/main.cpp.o
  /usr/include/c++/12/bits/ostream.tcc
  /usr/include/c++/12/istream
  /usr/include/c++/12/bits/istream.tcc
- /usr/include/c++/12/sstream
- /usr/include/c++/12/bits/sstream.tcc
  /usr/include/c++/12/vector
  /usr/include/c++/12/bits/stl_uninitialized.h
  /usr/include/c++/12/bits/stl_vector.h
  /usr/include/c++/12/bits/stl_bvector.h
  /usr/include/c++/12/bits/vector.tcc
+ /usr/lib/gcc/x86_64-linux-gnu/12/include/omp.h
 
