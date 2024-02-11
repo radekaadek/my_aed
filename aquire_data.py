@@ -1,3 +1,7 @@
+"""
+This script downloads spatial feature data from OpenStreetMap and saves it to a csv file
+"""
+
 from OSMPythonTools.overpass import overpassQueryBuilder
 from OSMPythonTools.nominatim import Nominatim
 import requests
@@ -9,7 +13,7 @@ import numpy as np
 import time
 import os
 
-def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dict]:
+def get_point_data(node_name: str, area_name: str, date: str = "") -> list[dict]:
     """Get point data from Overpass API in the form of a list of dictionaries:
 
     geometry: (lat, lon), type: node_name
@@ -20,7 +24,7 @@ def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dic
     area_name -- name of the area to get data from
     date -- date of the data (default None)
     """
-    if date is None:
+    if date == "":
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     # ovapi = Overpass()
@@ -43,7 +47,7 @@ def get_point_data(node_name: str, area_name: str, date: str = None) -> list[dic
         nodes.append({"geometry": node_geom, "type": name})
     return nodes
 
-def get_line_data(node_name: str, area_name: str, date: str = None) -> list[dict]:
+def get_line_data(node_name: str, area_name: str, date: str = "") -> list[dict]:
     """Get line data from Overpass API in the form of a list of dictionaries:
 
     geometry: [(lat, lon), (lat, lon), ...], type: node_name
@@ -54,7 +58,7 @@ def get_line_data(node_name: str, area_name: str, date: str = None) -> list[dict
     area_name -- name of the area to get data from
     date -- date of the data (default None)
     """
-    if date is None:
+    if date == "":
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     # ovapi = Overpass()
@@ -105,7 +109,7 @@ def get_line_df(line_data: list[dict]) -> pd.DataFrame:
     return retv
 
 
-def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: list[str] = ['amenity', 'building'], date: str = None) -> pd.DataFrame:
+def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: list[str] = ['amenity', 'building'], date: str = "") -> pd.DataFrame:
     """Get area data from Overpass API in the form of a pandas DataFrame:
 
     Name, Geometry
@@ -115,7 +119,7 @@ def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: 
     area_name -- name of the area to get data from
     date -- date of the data (default None)
     """
-    if date is None:
+    if date == "":
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     nomatim = Nominatim()
@@ -147,7 +151,7 @@ def get_area_data(area_name: str, selector: str = 'building', tags_to_look_for: 
     retv = pd.DataFrame(areas)
     return retv
 
-def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd.DataFrame:
+def get_feature_df(area_name: str, date: str = "", hexagon_res: int = 9) -> pd.DataFrame:
     """Get feature data from Overpass API in the form of a DataFrame with one column 'name' and of which
     values are the number of features of that type in the area. The index is the hexagon id.
 
@@ -157,7 +161,7 @@ def get_feature_df(area_name: str, date: str = None, hexagon_res: int = 9) -> pd
     date -- date of the data (default None)
     hexagon_res -- resolution of the hexagon grid (default 9)
     """
-    if date is None:
+    if date == "":
         # set to current date
         date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     
@@ -325,7 +329,7 @@ def add_neighbours(df: pd.DataFrame) -> pd.DataFrame:
     return retv
 
 
-def get_all_data(area_name: str, hexagon_res: int = 9, get_neighbours: bool = True, date: str = None) -> pd.DataFrame:
+def get_all_data(area_name: str, hexagon_res: int = 9, date: str = "") -> pd.DataFrame:
     # combine data from get_feature_df and get_area_df
     feature_df = get_feature_df(area_name, date=date, hexagon_res=hexagon_res)
     building_df = get_area_data(area_name, selector='building', tags_to_look_for=['amenity', 'building'], date=date)

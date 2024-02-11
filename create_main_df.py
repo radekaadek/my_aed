@@ -1,3 +1,8 @@
+"""
+This script downloads OHCA data from sources and adds them to the main dataframe
+It also adds the neighbors to the data
+"""
+
 import io
 import pandas as pd
 import requests
@@ -53,18 +58,17 @@ main_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=['
 
 file_path = './data/mtgmry_unfiltered.csv'
 # check if montgomery data is in the data directory
-if 'mtgmry_unfiltered.csv' in os.listdir('data'):
-    mtgmry_ohca_df = pd.read_csv('data/mtgmry_unfiltered.csv')
-else:
+if 'mtgmry_unfiltered.csv' not in os.listdir('data'):
     # download the montgomery data and save it to the data directory
-    url = 'https://dvn-cloud.s3.amazonaws.com/10.7910/DVN/X8Q4YA/159198dc652-749f3f65c59d.orig?response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27911.csv&response-content-type=text%2Fcsv&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240113T182722Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIAIEJ3NV7UYCSRJC7A%2F20240113%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=e1a7e077915752708eeaf936ed681007b64cdd46c501aba558a781e881566a2d'
-    file = requests.get(url)
-    file_bytes = io.BytesIO(file.content)
-    # save the file to the data directory
-    with open(file_path, 'wb') as f:
-        f.write(file_bytes.read())
-    # read the csv file
-    mtgmry_ohca_df = pd.read_csv(file_path)
+    # set KAGGLE_USERNAME and KAGGLE_KEY environment variables {"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}
+    # create a file in ~/.kaggle/kaggle.json with the username and key
+    with open(os.path.expanduser('~/.kaggle/kaggle.json'), 'w') as f:
+        f.write('{"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}')
+    os.system('cd data && kaggle datasets download -d mchirico/montcoalert --unzip')
+    # rename the file to mtgmry_unfiltered.csv
+    os.system(f'mv ./data/911.csv {file_path}')
+mtgmry_ohca_df = pd.read_csv(file_path)
+
 # filter by 'title' containing 'CARDIAC ARREST'
 mtgmry_ohca_df = mtgmry_ohca_df[mtgmry_ohca_df['title'].str.contains('CARDIAC ARREST')]
 # timeStamp contatins 2017 2018 2019
@@ -83,9 +87,10 @@ main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axi
 if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
     cinncinati_ohca_df = pd.read_csv('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
 else:
-    raise NotImplementedError('Automatically downloading the Cincinnati data is not implemented yet. Please\
+    raise NotImplementedError('Automatical downloading of the Cincinnati data is not implemented yet. Please\
                               download the data manually and place it in the data directory from:\
-                              https://data.cincinnati-oh.gov/Safety/Cincinnati-Fire-Incidents-CAD-including-EMS-ALS-BL/vnsz-a3wp/data')
+                              https://data.cincinnati-oh.gov/Safety/Cincinnati-Fire-Incidents-CAD-including-EMS-ALS-BL/vnsz-a3wp/data\
+                              and put it in the data directory as Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
 # remove rows with NaN values in 'LATITUDE_X' or 'LONGITUDE_X'
 cinncinati_ohca_df.dropna(subset=['LATITUDE_X', 'LONGITUDE_X'], inplace=True)
 # filter by 'INCIDENT_TYPE_DESC' containing 'CARDIAC' and STROKE (CVA) / CFD_INCIDENT_TYPE_GROUP containing 'CARDIAC'

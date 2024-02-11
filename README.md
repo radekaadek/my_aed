@@ -30,6 +30,13 @@ Install python dependencies:
 pip install -r requirements.txt
 ```
 
+Compile neighbourer:
+```bash
+cd neighbourer
+cmake CMakeLists.txt
+make
+```
+
 The deployment goes through the following steps:
 
 1. [aquire_data.py](./aquire_data.py) - Downloads and saves case data as two files - `osm_data.csv` with data about the terrain features and `warszawa_osm.csv` into the [data](./data) directory from:
@@ -56,7 +63,7 @@ We would like to send special thanks to people and organizations that have share
 
 - The city of [Virginia Beach](https://www.vbgov.com/Pages/default.aspx) and the creators of [VBOHCA](https://github.com/janielecustodio/VBOHCA)
 - The city of [Cincinnati](https://data.cincinnati-oh.gov/)
-- [Montgomery County](https://www.montcopa.org/)
+- [Montgomery County](https://www.montgomerycountymd.gov/)
 - The [County of Berks](https://opendata.countyofberks.com/)
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Seal_of_Virginia_Beach%2C_Virginia.png/1024px-Seal_of_Virginia_Beach%2C_Virginia.png" alt="Virginia Beach logo" width="100"/><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Seal_of_Cincinnati%2C_Ohio.svg/1024px-Seal_of_Cincinnati%2C_Ohio.svg.png" alt="Cincinnati logo" width="100"/><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Coat_of_arms_of_Montgomery_County%2C_Maryland.svg/133px-Coat_of_arms_of_Montgomery_County%2C_Maryland.svg.png" alt="Montgomery County logo" width="100"/><img src="https://berks.maps.arcgis.com/sharing/rest/content/items/38662de34c18477cb540b8bab0cf7a81/data" alt="Berks County logo" width="100"/>
