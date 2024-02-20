@@ -90,7 +90,7 @@ response = requests.get(url)
 if response.status_code == 200:
     cinncinati_ohca_df = pd.read_csv(io.StringIO(response.text))
 else:
-    print("Cinncinati data automatic dowload failed")
+    print("Cincinnati data automatic download failed")
     if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
         cinncinati_ohca_df = pd.read_csv('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
     else:
