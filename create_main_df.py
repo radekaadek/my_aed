@@ -83,14 +83,22 @@ mtgmry_ohca_df = pd.DataFrame.from_dict(hexid_ohca_cnt, orient='index', columns=
 main_ohca_df = pd.concat([main_ohca_df, mtgmry_ohca_df], ignore_index=False, axis=0)
 
 
-# read cinncinati data
-if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
-    cinncinati_ohca_df = pd.read_csv('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+# download and read cinncinati data
+url = "https://data.cincinnati-oh.gov/api/views/vnsz-a3wp/rows.csv?accessType=DOWNLOAD"
+response = requests.get(url)
+
+if response.status_code == 200:
+    cinncinati_ohca_df = pd.read_csv(io.StringIO(response.text))
 else:
-    raise NotImplementedError('Automatical downloading of the Cincinnati data is not implemented yet. Please\
+    print("Cincinnati data automatic download failed")
+    if 'Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv' in os.listdir('data'):
+        cinncinati_ohca_df = pd.read_csv('./data/Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+    else:
+        raise FileNotFoundError("Could not automatically fetch the Cincinnati data. Please\
                               download the data manually and place it in the data directory from:\
                               https://data.cincinnati-oh.gov/Safety/Cincinnati-Fire-Incidents-CAD-including-EMS-ALS-BL/vnsz-a3wp/data\
-                              and put it in the data directory as Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv')
+                              and put it in the data directory as Cincinnati_Fire_Incidents__CAD___including_EMS__ALS_BLS_.csv")
+
 # remove rows with NaN values in 'LATITUDE_X' or 'LONGITUDE_X'
 cinncinati_ohca_df.dropna(subset=['LATITUDE_X', 'LONGITUDE_X'], inplace=True)
 # filter by 'INCIDENT_TYPE_DESC' containing 'CARDIAC' and STROKE (CVA) / CFD_INCIDENT_TYPE_GROUP containing 'CARDIAC'
