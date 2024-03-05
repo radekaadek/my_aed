@@ -62,8 +62,13 @@ if 'mtgmry_unfiltered.csv' not in os.listdir('data'):
     # download the montgomery data and save it to the data directory
     # set KAGGLE_USERNAME and KAGGLE_KEY environment variables {"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}
     # create a file in ~/.kaggle/kaggle.json with the username and key
-    with open(os.path.expanduser('~/.kaggle/kaggle.json'), 'w') as f:
-        f.write('{"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}')
+    # check if user isnt root
+    if os.getuid() == 0:
+        with open('/root/.kaggle/kaggle.json', 'w') as f:
+            f.write('{"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}')
+    else:
+        with open(os.path.expanduser('~/.kaggle/kaggle.json'), 'w') as f:
+            f.write('{"username":"ardfessdx","key":"f2c9378c38080c30a3649d2abe658a0d"}')
     os.system('cd data && kaggle datasets download -d mchirico/montcoalert --unzip')
     # rename the file to mtgmry_unfiltered.csv
     os.system(f'mv ./data/911.csv {file_path}')
