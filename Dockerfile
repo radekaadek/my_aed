@@ -36,6 +36,7 @@ WORKDIR /
 
 # install python packages
 
+RUN dnf install python3-devel -y
 COPY requirements.txt /requirements.txt
 RUN python3 -m venv venv
 RUN source venv/bin/activate

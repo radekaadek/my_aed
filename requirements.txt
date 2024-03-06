@@ -20,12 +20,10 @@ et-xmlfile==1.1.0
 executing==2.0.1
 fastapi==0.110.0
 filelock==3.13.1
-fiona==1.9.5
 folium==0.15.1
 fonttools==4.47.0
 fsspec==2023.12.2
 geojson==3.1.0
-geopandas==0.14.1
 h11==0.14.0
 h2o @ http://h2o-release.s3.amazonaws.com/h2o/rel-3.44.0/3/Python/h2o-3.44.0.3-py2.py3-none-any.whl#sha256=1a7bab700c014cd74bfd42ad1948a708c4c219ccc28ef3ce27eefea2522f5bb4
 h3==4.0.0b2
@@ -87,8 +85,6 @@ threadpoolctl==3.2.0
 torch==2.1.2
 tornado==6.4
 tqdm==4.66.1
-traitlets==5.14.0
-triton==2.1.0
 typing_extensions==4.9.0
 tzdata==2023.3
 ujson==5.9.0
