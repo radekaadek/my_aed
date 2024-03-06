@@ -42,12 +42,10 @@ RUN source venv/bin/activate
 RUN pip3 install kaggle
 RUN mkdir /root/.kaggle
 RUN pip3 install -r requirements.txt
-RUN python3 aquire_data.py
-RUN python3 create_main_df.py
 
 EXPOSE 80
 
-# run an http server and serve the /data folder
-CMD python3 -m http.server 80 --directory /data
+# run an http server and serve the /results directory
+CMD ["python3", "-m", "http.server", "80", "--directory", "/results"]
 
 
