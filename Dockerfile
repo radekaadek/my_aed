@@ -45,7 +45,7 @@ RUN pip3 install -r requirements.txt
 
 EXPOSE 80
 
-# run an http server and serve the /results directory
-CMD ["python3", "-m", "http.server", "80", "--directory", "/results"]
+# run refresh_model.sh & serve_results.py
 
+CMD ["refresh_model.sh & serve_results.py"]
 

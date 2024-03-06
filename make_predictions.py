@@ -1,5 +1,7 @@
 # load h2o model and make predictions
 import h2o
+import os
+import json
 import pandas as pd
 
 # initialize h2o
@@ -38,6 +40,17 @@ target_df['OHCA'] = target_df['OHCA'].apply(lambda x: max(0, x))
 # set unnamed to hex_id and set it as the index
 target_df.rename(columns={'Unnamed: 0': 'hex_id'}, inplace=True)
 target_df.set_index('hex_id', inplace=True)
-print(target_df.head())
 # save as csv
 target_df.to_csv('./data/predictions.csv')
+
+# create a {"hex_id": "OHCA"} dictionary
+predictions = target_df.to_dict()['OHCA']
+# check if the results folder exists
+if not os.path.exists('./results'):
+    os.makedirs('./results')
+# save predictions as json
+with open('./results/results.json', 'w') as f:
+    json.dump(predictions, f)
+# shutdown h2o
+h2o.cluster().shutdown()
+
