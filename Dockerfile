@@ -3,7 +3,6 @@ FROM rockylinux/rockylinux:9
 WORKDIR /
 # copy: aquire_data.py, requirements.txt, train_model.py, visual.py, make_predictions.py,create_main_df.py and the folder neighbourer
 COPY aquire_data.py /aquire_data.py
-COPY requirements.txt /requirements.txt
 COPY train_model.py /train_model.py
 COPY visual.py /visual.py
 COPY make_predictions.py /make_predictions.py
@@ -37,15 +36,18 @@ WORKDIR /
 
 # install python packages
 
+COPY requirements.txt /requirements.txt
 RUN python3 -m venv venv
 RUN source venv/bin/activate
-RUN pip3 install kaggle
 RUN mkdir /root/.kaggle
 RUN pip3 install -r requirements.txt
 
-EXPOSE 80
 
-# run refresh_model.sh & serve_results.py
+COPY refresh_model.sh /refresh_model.sh
+COPY serve_results.py /serve_results.py
+RUN chmod +x /refresh_model.sh
+COPY deploy.sh /deploy.sh
+RUN chmod +x /deploy.sh
 
-CMD ["refresh_model.sh & serve_results.py"]
-
+EXPOSE 8080
+CMD ["/deploy.sh"]
