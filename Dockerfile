@@ -51,7 +51,6 @@ COPY deploy.sh /deploy.sh
 RUN chmod +x /deploy.sh
 
 # download java 11
-RUN dnf install java-11-openjdk -y
-
+RUN dnf install java-11-openjdk java-11-openjdk-devel -y
 EXPOSE 8080
 CMD ["/deploy.sh"]
