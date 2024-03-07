@@ -50,8 +50,8 @@ RUN chmod +x /refresh_model.sh
 COPY deploy.sh /deploy.sh
 RUN chmod +x /deploy.sh
 
-# download java 17
-RUN dnf install java-17-openjdk -y
+# download java 11
+RUN dnf install java-11-openjdk -y
 
 EXPOSE 8080
 CMD ["/deploy.sh"]
